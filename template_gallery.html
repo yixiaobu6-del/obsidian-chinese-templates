@@ -1,0 +1,5026 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Obsidian中文模板库 - 预览与安装</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif; }
+    .template-content pre {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .template-content pre code {
+      font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    }
+    .modal-overlay {
+      backdrop-filter: blur(4px);
+    }
+    .tag-pill {
+      transition: all 0.2s;
+    }
+    .tag-pill:hover {
+      transform: translateY(-1px);
+    }
+    .card-hover {
+      transition: all 0.25s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 24px -8px rgba(0,0,0,0.12);
+    }
+    .stat-card {
+      transition: all 0.2s;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+    }
+    .active-filter {
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadeIn 0.3s ease; }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .modal-in { animation: modalIn 0.25s ease; }
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      animation: fadeIn 0.3s ease;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
+
+  <div class="max-w-6xl mx-auto px-4 py-6 md:py-10">
+
+    <!-- 头部 -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-purple-500 to-blue-500 rounded-2xl shadow-lg mb-4">
+        <i class="fa fa-book text-white text-2xl"></i>
+      </div>
+      <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Obsidian 中文模板库</h1>
+      <p class="text-gray-500">100 个即用型模板 · 覆盖日记、笔记、项目、复盘等场景</p>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div id="stats" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6"></div>
+
+    <!-- 搜索与筛选 -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+      <div class="flex flex-col md:flex-row gap-3 mb-4">
+        <div class="flex-1 relative">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+          <input type="text" id="searchInput" class="w-full border border-gray-200 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none" placeholder="搜索模板名称、说明、场景或标签...">
+        </div>
+        <button onclick="search()" class="bg-blue-500 text-white px-5 py-2.5 rounded-lg hover:bg-blue-600 transition text-sm font-medium">
+          <i class="fa fa-search"></i> 搜索
+        </button>
+        <button onclick="clearFilter()" class="bg-gray-100 text-gray-600 px-4 py-2.5 rounded-lg hover:bg-gray-200 transition text-sm">
+          <i class="fa fa-refresh"></i> 全部
+        </button>
+      </div>
+
+      <div class="flex flex-wrap gap-2">
+        <span class="text-sm text-gray-400 leading-8 mr-1"><i class="fa fa-filter"></i> 分类：</span>
+        <button onclick="filterByCategory('全部')" id="cat-全部" class="px-3.5 py-1.5 bg-blue-500 text-white rounded-full text-xs font-medium transition tag-pill">全部</button>
+        <button onclick="filterByCategory('日记')" id="cat-日记" class="px-3.5 py-1.5 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-gray-200 transition tag-pill">日记</button>
+        <button onclick="filterByCategory('笔记')" id="cat-笔记" class="px-3.5 py-1.5 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-gray-200 transition tag-pill">笔记</button>
+        <button onclick="filterByCategory('项目管理')" id="cat-项目管理" class="px-3.5 py-1.5 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-gray-200 transition tag-pill">项目管理</button>
+        <button onclick="filterByCategory('复盘')" id="cat-复盘" class="px-3.5 py-1.5 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-gray-200 transition tag-pill">复盘</button>
+        <button onclick="filterByCategory('目标')" id="cat-目标" class="px-3.5 py-1.5 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-gray-200 transition tag-pill">目标</button>
+        <button onclick="filterByCategory('生活')" id="cat-生活" class="px-3.5 py-1.5 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-gray-200 transition tag-pill">生活</button>
+      </div>
+    </div>
+
+    <!-- 结果统计 -->
+    <div class="flex items-center justify-between mb-4">
+      <div id="resultCount" class="text-sm text-gray-500"></div>
+      <div class="flex gap-2">
+        <button onclick="toggleView('grid')" id="view-grid" class="px-3 py-1.5 bg-blue-100 text-blue-600 rounded text-sm"><i class="fa fa-th-large"></i></button>
+        <button onclick="toggleView('list')" id="view-list" class="px-3 py-1.5 bg-gray-100 text-gray-500 rounded text-sm"><i class="fa fa-list"></i></button>
+      </div>
+    </div>
+
+    <!-- 模板卡片网格 -->
+    <div id="results" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+    <!-- 分页 -->
+    <div id="pagination" class="flex justify-center items-center gap-2 mt-8"></div>
+
+  </div>
+
+  <!-- 模板组合器面板 -->
+  <div id="combinerPanel" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg transform translate-y-full transition-transform duration-300 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-3">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+          <i class="fa fa-layer-group text-purple-500"></i>
+          <span class="font-semibold text-gray-700">模板组合器</span>
+          <span id="combinerCount" class="text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full">0个模板</span>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="clearCombiner()" class="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded hover:bg-gray-100"><i class="fa fa-trash-o"></i> 清空</button>
+          <button onclick="toggleCombinerPanel()" class="text-xs bg-gray-200 text-gray-600 px-3 py-1 rounded hover:bg-gray-300"><i class="fa fa-chevron-down"></i> 收起</button>
+        </div>
+      </div>
+      <div id="combinerList" class="flex flex-wrap gap-2 mb-3 max-h-24 overflow-y-auto"></div>
+      <div class="flex gap-2">
+        <button onclick="previewCombined()" class="bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-purple-600 transition flex items-center gap-1.5">
+          <i class="fa fa-eye"></i> 预览合并
+        </button>
+        <button onclick="copyCombined()" class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition flex items-center gap-1.5">
+          <i class="fa fa-copy"></i> 复制合并内容
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 组合预览模态窗 -->
+  <div id="combineModal" class="fixed inset-0 z-[55] hidden modal-overlay" style="background: rgba(0,0,0,0.45);">
+    <div class="flex items-center justify-center min-h-full p-4">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden modal-in">
+        <div class="sticky top-0 bg-gradient-to-r from-purple-500 to-blue-500 px-6 py-4 flex items-center justify-between">
+          <h3 class="text-lg font-bold text-white"><i class="fa fa-layer-group mr-2"></i>合并模板预览</h3>
+          <button onclick="closeCombineModal()" class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition">
+            <i class="fa fa-times text-white"></i>
+          </button>
+        </div>
+        <div class="px-6 py-4 overflow-y-auto" style="max-height: calc(85vh - 120px);">
+          <div id="combinedPreview" class="template-content bg-white border border-gray-100 rounded-xl overflow-hidden"></div>
+        </div>
+        <div class="px-6 py-3 bg-gray-50 flex justify-end gap-2">
+          <button onclick="copyCombined()" class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium transition"><i class="fa fa-copy mr-1"></i>复制合并内容</button>
+          <button onclick="closeCombineModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-lg text-sm font-medium transition">关闭</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 组合器快捷入口 -->
+  <button id="combinerTrigger" onclick="toggleCombinerPanel()" class="fixed bottom-4 right-4 w-12 h-12 bg-purple-500 hover:bg-purple-600 text-white rounded-full shadow-lg flex items-center justify-center transition z-40 hidden">
+    <i class="fa fa-layer-group"></i>
+  </button>
+
+  <!-- 详情模态窗 -->
+  <div id="modal" class="fixed inset-0 z-50 hidden modal-overlay" style="background: rgba(0,0,0,0.45);">
+    <div class="flex items-center justify-center min-h-full p-4">
+      <div id="modalContent" class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden modal-in">
+        <div id="modalHeader" class="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
+          <div>
+            <h2 id="modalTitle" class="text-xl font-bold text-gray-800"></h2>
+            <div id="modalTags" class="flex gap-1.5 mt-1.5"></div>
+          </div>
+          <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition">
+            <i class="fa fa-times text-gray-500"></i>
+          </button>
+        </div>
+        <div class="px-6 py-4 overflow-y-auto" style="max-height: calc(90vh - 140px);">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="bg-gray-50 rounded-lg p-4">
+              <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">说明</p>
+              <p id="modalDesc" class="text-gray-700 text-sm leading-relaxed"></p>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-4">
+              <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">适用场景</p>
+              <p id="modalScenario" class="text-gray-700 text-sm leading-relaxed"></p>
+            </div>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-4 mb-4">
+            <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">依赖</p>
+            <p id="modalDeps" class="text-gray-700 text-sm"></p>
+          </div>
+          <div class="mb-3 flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-gray-600">模板内容预览</h3>
+            <div class="flex gap-2">
+              <button id="copyBtn" onclick="copyTemplate()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+                <i class="fa fa-copy"></i> 复制模板
+              </button>
+              <button onclick="showInstallGuide()" class="bg-purple-50 hover:bg-purple-100 text-purple-600 px-4 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+                <i class="fa fa-download"></i> 安装指引
+              </button>
+            </div>
+          </div>
+          <div id="modalPreview" class="template-content bg-white border border-gray-100 rounded-xl overflow-hidden"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- 安装指引模态窗 -->
+  <div id="installModal" class="fixed inset-0 z-[60] hidden modal-overlay" style="background: rgba(0,0,0,0.45);">
+    <div class="flex items-center justify-center min-h-full p-4">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 modal-in">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold text-gray-800"><i class="fa fa-download text-purple-500 mr-2"></i>安装指引</h3>
+          <button onclick="closeInstallModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition">
+            <i class="fa fa-times text-gray-500"></i>
+          </button>
+        </div>
+        <div class="space-y-5 text-sm text-gray-600 leading-relaxed">
+          <div class="bg-blue-50 rounded-lg p-4 border border-blue-100">
+            <p class="font-semibold text-blue-700 mb-2"><i class="fa fa-info-circle"></i> 前提条件</p>
+            <p>确保已安装 <a href="https://obsidian.md" target="_blank" class="text-blue-500 underline">Obsidian</a> 及 <a href="https://github.com/SilentVoid13/Templater" target="_blank" class="text-blue-500 underline">Templater 插件</a>。</p>
+          </div>
+
+          <div>
+            <p class="font-semibold text-gray-700 mb-2">步骤一：复制模板文件</p>
+            <div class="bg-gray-800 text-gray-100 rounded-lg p-3 text-xs font-mono">
+              <p># 将 templates/ 目录复制到 Obsidian 库的模板文件夹</p>
+              <p class="text-green-400">cp -r templates/* /path/to/your/vault/_templates/</p>
+            </div>
+          </div>
+
+          <div>
+            <p class="font-semibold text-gray-700 mb-2">步骤二：配置 Templater</p>
+            <p class="mb-2">在 Obsidian 设置 → 社区插件 → Templater 中配置：</p>
+            <ul class="list-disc pl-5 space-y-1">
+              <li>设置 <strong>Template folder location</strong> 为 <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">_templates</code></li>
+              <li>设置 <strong>Script files folder location</strong> 为 <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">_scripts</code>（如需要脚本）</li>
+              <li>建议绑定快捷键：设置 → 快捷键 → 搜索 <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">Templater: Insert Template</code></li>
+            </ul>
+          </div>
+
+          <div>
+            <p class="font-semibold text-gray-700 mb-2">步骤三：使用模板</p>
+            <p>按快捷键 <kbd class="bg-gray-100 px-2 py-0.5 rounded border border-gray-300 text-xs">Alt+N</kbd>（或你绑定的快捷键）→ 选择模板 → 自动生成。</p>
+          </div>
+
+          <div>
+            <p class="font-semibold text-gray-700 mb-2">可选：CSS 美化</p>
+            <p>将 <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">css/</code> 目录下的文件复制到 <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">.obsidian/snippets/</code>，然后在设置 → 外观 → CSS 片段中启用。</p>
+          </div>
+        </div>
+        <div class="mt-5 pt-4 border-t border-gray-100 text-center">
+          <button onclick="closeInstallModal()" class="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-lg text-sm font-medium transition">我知道了</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== 模板数据 ==========
+    const templates = [
+      {
+        id: "diary",
+        name: "日记模板",
+        description: "每日记录与任务追踪模板，自动生成当日日期、星期、时间线。支持今日重点、工作记录、学习思考、健康追踪、感恩日记、评分系统。",
+        scenario: "每日日记、工作日志、个人记录、日常反思",
+        tags: ["日记", "效率", "记录"],
+        category: "日记",
+        deps: "Templater",
+        content: `---
+创建时间: {{time}}
+标签: #type/日记 #status/进行中
+本周: [[{{week}}周复盘]]
+本月: [[{{month}}复盘]]
+---
+
+# {{date}} {{weekday}}
+
+## 今日重点
+
+- [ ] 最重要的三件事：
+  1.
+  2.
+  3.
+
+## 时间线
+
+### 上午
+
+### 下午
+
+### 晚上
+
+## 工作记录
+
+### 完成事项
+
+### 遇到的问题
+
+### 明日计划
+
+## 学习与思考
+
+### 学到了什么
+
+*
+
+### 灵感
+
+*
+
+## 健康
+
+- [ ] 运动
+- [ ] 早睡
+- [ ] 冥想
+- [ ] 喝水充足
+
+## 感恩日记
+
+1.
+2.
+3.
+
+## 今日评分
+
+精力: ⭐⭐⭐
+效率: ⭐⭐⭐
+心情: ⭐⭐⭐`
+      },
+      {
+        id: "reading",
+        name: "读书笔记模板",
+        description: "书籍阅读记录模板，交互式输入书名和作者。包含书籍信息、核心观点、金句摘录、个人理解、知识关联、行动清单。",
+        scenario: "读书笔记、知识管理、阅读复盘、书评写作",
+        tags: ["笔记", "读书", "学习"],
+        category: "笔记",
+        deps: "Templater",
+        content: `---
+书名: {{title}}
+作者: {{author}}
+读完日期: {{date}}
+评分:
+状态: #status/已完成
+标签: #type/读书笔记
+---
+
+# 《{{title}}》读书笔记
+
+## 书籍信息
+
+- **书名：** {{title}}
+- **作者：** {{author}}
+- **类别：**
+- **页数：**
+- **出版年份：**
+
+## 为什么读这本书
+
+*
+
+## 核心观点
+
+### 观点一
+
+*
+
+### 观点二
+
+*
+
+### 观点三
+
+*
+
+## 金句摘录
+
+> *
+
+## 我的理解
+
+*
+
+## 与已有知识的联系
+
+- 与 [[]] 相关
+- 与 [[]] 相似
+- 与 [[]] 矛盾
+
+## 行动清单
+
+- [ ]
+- [ ]
+- [ ]
+
+## 适合引用场景
+
+*`
+      },
+      {
+        id: "project",
+        name: "项目管理模板",
+        description: "项目全生命周期管理模板，交互式输入项目名称和类型。包含项目概览、里程碑、任务清单、资源管理、决策记录、周进展追踪、复盘总结。",
+        scenario: "项目管理、任务追踪、团队协作、里程碑管理",
+        tags: ["项目管理", "效率", "任务"],
+        category: "项目管理",
+        deps: "Templater",
+        content: `---
+项目名称: {{projectName}}
+类型: {{projectType}}
+状态: #status/进行中
+开始日期: {{date}}
+标签: #type/项目笔记
+---
+
+# {{projectName}} 项目
+
+## 项目概览
+
+- **目标：**
+- **关键成果：**
+- **截止日期：**
+- **负责人：**
+
+## 项目背景
+
+*
+
+## 里程碑
+
+| 里程碑 | 截止日期 | 状态 |
+|--------|----------|------|
+| M1 | | ⬜ |
+| M2 | | ⬜ |
+| M3 | | ⬜ |
+
+## 任务清单
+
+### 待办
+
+- [ ]
+- [ ]
+
+### 进行中
+
+- [ ]
+
+### 已完成
+
+- [x]
+
+## 资源清单
+
+### 参考资料
+
+### 工具
+
+## 决策记录
+
+### YYYY-MM-DD 决策
+
+**背景：**
+**
+
+**决策：**
+**
+
+**理由：**
+**
+
+## 周进展
+
+### Week 1（YYYY-MM-DD）
+
+**进度：**
+**完成：**
+**阻塞：**
+**下周计划：**
+
+## 复盘
+
+### 做得好的
+
+1.
+
+### 可以改进的
+
+1.
+
+### 经验教训
+
+*`
+      },
+      {
+        id: "writing",
+        name: "写作模板",
+        description: "文章/文案创作框架模板，交互式输入标题和类型。包含一句话概括、目标读者、结构规划（开头/正文/结尾）、素材库（案例/数据/引用/金句）、初稿区域。",
+        scenario: "公众号文章、博客写作、脚本创作、文案撰写",
+        tags: ["写作", "创作", "内容"],
+        category: "笔记",
+        deps: "Templater",
+        content: `---
+标题: {{title}}
+类型: {{type}}
+状态: #status/初稿
+创建日期: {{date}}
+标签: #type/创作
+---
+
+# {{title}}
+
+## 一句话概括
+
+*
+
+## 目标读者
+
+*
+
+## 核心信息
+
+*
+
+## 结构规划
+
+### 开头（吸引注意力）
+
+*
+
+### 正文
+
+#### 第一部分：
+
+*
+
+#### 第二部分：
+
+*
+
+#### 第三部分：
+
+*
+
+### 结尾（行动号召）
+
+*
+
+## 素材库
+
+### 案例
+
+### 数据
+
+### 引用
+
+### 金句
+
+## 初稿
+
+*`
+      },
+      {
+        id: "meeting",
+        name: "会议记录模板",
+        description: "会议纪要模板，交互式输入会议主题和参会人员。包含基本信息、会议议程、讨论记录、决策事项、行动项追踪、下次会议安排。",
+        scenario: "工作会议、团队周会、项目评审、客户会议",
+        tags: ["项目管理", "会议", "协作"],
+        category: "项目管理",
+        deps: "Templater",
+        content: `---
+会议主题: {{meetingTitle}}
+日期: {{date}}
+参会人员: {{participants}}
+状态: #status/已完成
+标签: #type/会议记录
+相关项目: [[]]
+---
+
+# 会议：{{meetingTitle}}
+
+## 基本信息
+
+- **时间：**
+- **地点：**
+- **记录人：**
+
+## 会议议程
+
+1.
+2.
+3.
+
+## 讨论记录
+
+### 议题一
+
+*
+
+**结论：**
+
+### 议题二
+
+*
+
+**结论：**
+
+### 议题三
+
+*
+
+**结论：**
+
+## 决策事项
+
+| 决策内容 | 决策人 | 日期 |
+|----------|--------|------|
+
+## 行动项
+
+| 事项 | 负责人 | 截止日期 | 状态 |
+|------|--------|----------|------|
+
+## 下次会议
+
+- **建议时间：**
+- **待讨论：**`
+      },
+      {
+        id: "weekly",
+        name: "周报模板",
+        description: "周报总结模板，无需Templater即可使用。包含本周工作概览、完成/进行中任务、问题记录、下周计划、数据指标看板。",
+        scenario: "工作周报、项目周报、团队汇报、个人总结",
+        tags: ["复盘", "效率", "工作"],
+        category: "复盘",
+        deps: "--",
+        content: `# 周报模板
+
+## 本周工作概览
+
+### 已完成任务
+- [ ] 任务1：{{任务描述}} | 完成度：{{%}}
+- [ ] 任务2：{{任务描述}} | 完成度：{{%}}
+- [ ] 任务3：{{任务描述}} | 完成度：{{%}}
+
+### 进行中任务
+- {{任务名称}} - 进度：{{%}} - 预计完成：{{日期}}
+
+### 遇到的问题
+1. {{问题描述}}
+   - 解决方案：{{方案或待定}}
+
+## 下周计划
+
+### 优先任务
+1. {{任务名称}} | 预计工时：{{小时}}
+2. {{任务名称}} | 预计工时：{{小时}}
+
+### 待讨论事项
+- {{事项描述}}
+
+## 数据/指标
+
+| 指标 | 本周 | 上周 | 变化 |
+|------|:----:|:----:|:----:|
+| {{指标1}} | {{值}} | {{值}} | {{+/-}} |
+| {{指标2}} | {{值}} | {{值}} | {{+/-}} |
+
+---
+> 周次：{{第N周}} | 日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "okr",
+        name: "OKR模板",
+        description: "目标和关键结果管理模板。包含Objective设定、Key Results分解、进度追踪表格，支持多周期管理。",
+        scenario: "季度目标、年度规划、团队绩效、项目管理",
+        tags: ["目标", "管理", "绩效"],
+        category: "目标",
+        deps: "--",
+        content: `# OKR 模板
+
+## Objective（目标）
+
+> {{目标描述 - 简短有力的一句话}}
+
+## Key Results（关键结果）
+
+### KR1
+- 目标值：{{具体数值/状态}}
+- 当前值：{{当前状态}}
+- 进度：{{%}}
+- 负责人：{{姓名}}
+
+### KR2
+- 目标值：{{具体数值/状态}}
+- 当前值：{{当前状态}}
+- 进度：{{%}}
+- 负责人：{{姓名}}
+
+### KR3
+- 目标值：{{具体数值/状态}}
+- 当前值：{{当前状态}}
+- 进度：{{%}}
+- 负责人：{{姓名}}
+
+## 进度追踪
+
+| 周次 | KR1 | KR2 | KR3 | 备注 |
+|:----:|:---:|:---:|:---:|------|
+| W1 | {{%}} | {{%}} | {{%}} | {{备注}} |
+| W2 | {{%}} | {{%}} | {{%}} | {{备注}} |
+
+---
+> 周期：{{Q1/Q2/Q3/Q4}} {{年份}} | 最后更新：{{日期}}`
+      },
+      {
+        id: "customer",
+        name: "客户管理模板",
+        description: "客户关系管理模板。包含客户基本信息、合作历史、互动记录追踪，适用于自由职业者和企业客户管理。",
+        scenario: "客户管理、商务跟进、销售管理、合作记录",
+        tags: ["管理", "商务", "记录"],
+        category: "项目管理",
+        deps: "--",
+        content: `# 客户管理模板
+
+## 客户基本信息
+
+| 字段 | 内容 |
+|------|------|
+| 客户名称 | {{公司/个人名称}} |
+| 联系人 | {{姓名}} |
+| 联系方式 | {{电话/微信}} |
+| 行业 | {{行业分类}} |
+| 合作类型 | {{长期/项目/咨询}} |
+| 首次接触 | {{日期}} |
+
+## 合作历史
+
+### 项目1
+- 时间：{{起止日期}}
+- 内容：{{项目描述}}
+- 金额：{{金额}}
+- 状态：{{进行中/已完成/暂停}}
+
+### 项目2
+- 时间：{{起止日期}}
+- 内容：{{项目描述}}
+- 金额：{{金额}}
+- 状态：{{进行中/已完成/暂停}}
+
+## 最近互动记录
+
+| 日期 | 方式 | 内容 | 下一步 |
+|------|------|------|--------|
+| {{日期}} | {{电话/邮件/微信}} | {{沟通内容}} | {{待办}} |
+
+## 备注
+
+- {{备注信息}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "study",
+        name: "学习笔记模板",
+        description: "系统化学习笔记模板。包含学习主题、核心知识点拆解（概念/案例/应用）、金句摘录、个人思考、行动计划。",
+        scenario: "课程笔记、自学记录、技能学习、知识整理",
+        tags: ["笔记", "学习", "知识管理"],
+        category: "笔记",
+        deps: "--",
+        content: `# 学习笔记模板
+
+## 学习主题
+
+> {{课程/书籍/文章名称}}
+
+## 核心知识点
+
+### 要点1：{{标题}}
+- 概念：{{定义}}
+- 案例：{{举例}}
+- 应用场景：{{何时使用}}
+
+### 要点2：{{标题}}
+- 概念：{{定义}}
+- 案例：{{举例}}
+- 应用场景：{{何时使用}}
+
+## 金句摘录
+
+> "{{原文金句}}"
+> — {{出处}}
+
+## 我的思考
+
+{{个人理解和感悟}}
+
+## 行动计划
+
+| 行动项 | 优先级 | 预计时间 | 状态 |
+|--------|:------:|:--------:|:----:|
+| {{行动1}} | 高 | {{日期}} | 待开始 |
+| {{行动2}} | 中 | {{日期}} | 待开始 |
+
+---
+> 学习日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "annual_review",
+        name: "年度复盘模板",
+        description: "年度总结与复盘模板。包含目标回顾、关键成就、关键挑战、数据复盘、年度关键词、明年展望。",
+        scenario: "年度总结、年终复盘、个人成长回顾、团队回顾",
+        tags: ["复盘", "目标", "成长"],
+        category: "复盘",
+        deps: "--",
+        content: `# 年度复盘模板
+
+## 年度概览
+
+> {{年份}}年度总结与复盘
+
+## 目标回顾
+
+| 年初目标 | 完成情况 | 达成率 | 反思 |
+|----------|:--------:|:------:|------|
+| {{目标1}} | {{已完成/部分完成/未完成}} | {{%}} | {{分析}} |
+| {{目标2}} | {{已完成/部分完成/未完成}} | {{%}} | {{分析}} |
+| {{目标3}} | {{已完成/部分完成/未完成}} | {{%}} | {{分析}} |
+
+## 关键成就
+
+1. {{成就描述}} - {{月份}}
+2. {{成就描述}} - {{月份}}
+3. {{成就描述}} - {{月份}}
+
+## 关键挑战
+
+1. {{挑战描述}}
+   - 如何应对：{{应对措施}}
+   - 结果：{{结果}}
+
+## 数据复盘
+
+| 指标 | 年初 | 年末 | 变化 |
+|------|:----:|:----:|:----:|
+| {{收入}} | {{值}} | {{值}} | {{+/-}} |
+| {{用户数}} | {{值}} | {{值}} | {{+/-}} |
+| {{作品数}} | {{值}} | {{值}} | {{+/-}} |
+
+## 年度关键词
+
+- {{关键词1}}：{{解释}}
+- {{关键词2}}：{{解释}}
+- {{关键词3}}：{{解释}}
+
+## 明年展望
+
+### 重点目标
+1. {{目标描述}}
+2. {{目标描述}}
+
+### 能力提升计划
+- {{计划描述}}
+
+---
+> 复盘日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "knowledge_card",
+        name: "知识卡片模板",
+        description: "知识卡片/闪念笔记模板。包含概念定义、核心要点、适用场景、相关概念关联、案例记录，适合Zettelkasten方法。",
+        scenario: "知识管理、闪念笔记、卡片笔记、概念整理",
+        tags: ["笔记", "知识管理", "学习"],
+        category: "笔记",
+        deps: "--",
+        content: `# 知识卡片模板
+
+## 概念定义
+
+> {{简洁定义}}
+
+## 核心要点
+
+### 要点1
+{{内容}}
+
+### 要点2
+{{内容}}
+
+## 适用场景
+
+- {{场景1}}
+- {{场景2}}
+
+## 相关概念
+
+- {{概念A}}：{{一句话关联}}
+- {{概念B}}：{{一句话关联}}
+
+## 案例
+
+> {{案例描述}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "decision",
+        name: "决策记录模板",
+        description: "结构化决策记录模板。包含决策背景、多选项分析（优劣势/成本/风险）、决策结果、后续行动、回顾计划。",
+        scenario: "重要决策、方案评估、投资决策、项目选型",
+        tags: ["项目管理", "决策", "分析"],
+        category: "项目管理",
+        deps: "--",
+        content: `# 决策记录模板
+
+## 决策背景
+
+> {{面临的问题或选择}}
+
+## 选项分析
+
+### 选项A：{{名称}}
+- 优势：{{列出优势}}
+- 劣势：{{列出劣势}}
+- 成本：{{时间/金钱/人力}}
+- 风险：{{潜在风险}}
+
+### 选项B：{{名称}}
+- 优势：{{列出优势}}
+- 劣势：{{列出劣势}}
+- 成本：{{时间/金钱/人力}}
+- 风险：{{潜在风险}}
+
+## 决策结果
+
+> 最终选择：{{选项名称}}
+> 原因：{{核心理由}}
+
+## 后续行动
+
+| 行动项 | 负责人 | 时间 |
+|--------|:------:|:----:|
+| {{行动}} | {{姓名}} | {{日期}} |
+
+## 回顾计划
+
+- 回顾时间：{{YYYY-MM-DD}}
+- 回顾问题：{{效果如何/是否需要调整}}
+
+---
+> 决策日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "finance",
+        name: "财务追踪模板",
+        description: "月度财务管理模板。包含收支总览、支出明细分类、储蓄进度追踪，支持多维度财务数据记录。",
+        scenario: "个人理财、家庭记账、预算管理、财务复盘",
+        tags: ["生活", "财务", "管理"],
+        category: "生活",
+        deps: "--",
+        content: `# 财务追踪模板
+
+## 月度收支
+
+| 类别 | 金额 | 占比 |
+|------|:----:|:----:|
+| 收入 | {{¥}} | {{%}} |
+| 支出 | {{¥}} | {{%}} |
+| 结余 | {{¥}} | - |
+
+## 支出明细
+
+| 类别 | 本月 | 上月 | 变化 |
+|------|:----:|:----:|:----:|
+| 餐饮 | {{¥}} | {{¥}} | {{+/-}} |
+| 交通 | {{¥}} | {{¥}} | {{+/-}} |
+| 购物 | {{¥}} | {{¥}} | {{+/-}} |
+| 储蓄 | {{¥}} | {{¥}} | {{+/-}} |
+
+## 储蓄进度
+
+| 目标 | 当前 | 进度 | 预计达成 |
+|------|:----:|:----:|:--------:|
+| {{目标名称}} | {{¥}} | {{%}} | {{日期}} |
+
+---
+> 月份：{{YYYY-MM}}`
+      },
+      {
+        id: "travel",
+        name: "旅行计划模板",
+        description: "旅行规划模板。包含基本信息、逐日行程安排、预算清单、必备物品清单，支持行程管理和预算控制。",
+        scenario: "旅行规划、出差安排、度假计划、行程管理",
+        tags: ["生活", "旅行", "计划"],
+        category: "生活",
+        deps: "--",
+        content: `# 旅行计划模板
+
+## 基本信息
+
+| 字段 | 内容 |
+|------|------|
+| 目的地 | {{城市/景点}} |
+| 日期 | {{起止日期}} |
+| 天数 | {{N天}} |
+| 同行人员 | {{人数/姓名}} |
+
+## 行程安排
+
+### Day 1：{{日期}}
+| 时间 | 活动 | 地点 | 预算 |
+|:----:|------|------|:----:|
+| {{9:00}} | {{活动}} | {{地点}} | {{¥}} |
+
+### Day 2：{{日期}}
+| 时间 | 活动 | 地点 | 预算 |
+|:----:|------|------|:----:|
+
+## 预算清单
+
+| 项目 | 预算 | 实际 |
+|------|:----:|:----:|
+| 交通 | {{¥}} | {{¥}} |
+| 住宿 | {{¥}} | {{¥}} |
+| 餐饮 | {{¥}} | {{¥}} |
+
+## 必备物品清单
+
+- {{物品1}}
+- {{物品2}}
+
+---
+> 计划日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "habit",
+        name: "习惯养成清单模板",
+        description: "习惯追踪模板。包含目标习惯设定、每日执行记录、统计看板（连续天数/完成率）、反思分析。",
+        scenario: "习惯养成、自律打卡、行为改变、健康管理",
+        tags: ["生活", "习惯", "成长"],
+        category: "生活",
+        deps: "--",
+        content: `# 习惯养成清单模板
+
+## 目标习惯
+
+> {{习惯名称}}：{{具体目标}}
+
+## 执行记录
+
+| 日期 | 是否完成 | 情绪 | 备注 |
+|------|:--------:|:----:|------|
+| {{日期}} | ✓ | {{好/中/差}} | {{备注}} |
+| {{日期}} | ✓ | {{好/中/差}} | {{备注}} |
+
+## 统计数据
+
+- 连续天数：{{N天}}
+- 本月完成率：{{%}}
+- 最高连续天数：{{N天}}
+
+## 反思记录
+
+### 做得好的时候
+{{什么情况下更容易完成}}
+
+### 做得不好的时候
+{{什么情况下容易失败}}
+
+---
+> 开始日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "annual_goal",
+        name: "年度目标模板",
+        description: "年度目标规划模板。包含核心目标设定、关键指标定义、季度分解计划，支持全年目标管理和进度追踪。",
+        scenario: "年度规划、目标管理、季度分解、个人成长",
+        tags: ["目标", "规划", "成长"],
+        category: "目标",
+        deps: "--",
+        content: `# {{年份}}年度目标
+
+### 核心目标
+
+| # | 目标 | 关键指标 | 年终目标值 | 进度 |
+|:-:|------|----------|:----------:|:----:|
+| 1 | {{目标}} | {{指标}} | {{数值}} | {{%}} |
+| 2 | {{目标}} | {{指标}} | {{数值}} | {{%}} |
+
+### 季度分解
+
+| 季度 | 目标 | 关键动作 |
+|:----:|------|----------|
+| Q1 | {{目标}} | {{动作}} |
+| Q2 | {{目标}} | {{动作}} |
+| Q3 | {{目标}} | {{动作}} |
+| Q4 | {{目标}} | {{动作}} |
+
+---
+> 设定日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "review_diary",
+        name: "复盘日记模板",
+        description: "精简版复盘日记模板。包含今日概览、完成事项、亮点与反思、明日计划、状态记录（能量/睡眠/运动）。",
+        scenario: "每日复盘、工作反思、个人成长、效率提升",
+        tags: ["日记", "复盘", "效率"],
+        category: "日记",
+        deps: "--",
+        content: `# 复盘日记模板
+
+## 今日概览
+
+> {{一句话总结今天}}
+
+## 完成事项
+
+- {{事项1}} | 用时：{{分钟}}
+- {{事项2}} | 用时：{{分钟}}
+- {{事项3}} | 用时：{{分钟}}
+
+## 今日亮点
+
+{{做得好的地方，1-3条}}
+
+## 今日反思
+
+{{需要改进的地方}}
+
+## 明日计划
+
+| 优先级 | 事项 | 预计时间 |
+|:------:|------|:--------:|
+| P0 | {{事项}} | {{小时}} |
+| P1 | {{事项}} | {{小时}} |
+
+## 状态记录
+
+- 能量值：{{1-10}}
+- 睡眠时长：{{小时}}
+- 运动：{{有/无}}
+
+---
+> 日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "growth",
+        name: "个人成长追踪模板",
+        description: "个人成长与技能发展追踪模板。包含技能清单、习惯养成追踪、月度统计、成长事件记录，可视化个人进步。",
+        scenario: "技能学习、个人发展、习惯管理、成长记录",
+        tags: ["成长", "技能", "习惯"],
+        category: "目标",
+        deps: "--",
+        content: `# 个人成长追踪模板
+
+## 技能清单
+
+| 技能 | 当前水平 | 目标水平 | 学习方式 | 进度 |
+|------|:--------:|:--------:|----------|:----:|
+| {{技能1}} | {{初学/熟练/精通}} | {{目标}} | {{课程/实践}} | {{%}} |
+| {{技能2}} | {{初学/熟练/精通}} | {{目标}} | {{课程/实践}} | {{%}} |
+
+## 习惯养成追踪
+
+### 本月习惯
+| 习惯 | 目标次数 | 已完成 | 连续天数 | 备注 |
+|------|:--------:|:------:|:--------:|------|
+| {{习惯1}} | {{每天/每周N次}} | {{N}} | {{N}} | {{备注}} |
+| {{习惯2}} | {{每天/每周N次}} | {{N}} | {{N}} | {{备注}} |
+
+### 月度统计
+
+| 月份 | {{习惯1}}完成率 | {{习惯2}}完成率 | 总体评价 |
+|:----:|:---------------:|:---------------:|----------|
+| {{1月}} | {{%}} | {{%}} | {{优/良/差}} |
+
+## 成长事件记录
+
+| 日期 | 事件 | 类型 | 影响 |
+|------|------|------|------|
+| {{日期}} | {{事件描述}} | {{突破/挫折}} | {{分析}} |
+
+---
+> 开始追踪：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "idea_diary",
+        name: "灵感日记模板",
+        description: "灵感捕捉与记录模板。包含今日灵感、详细内容展开、可应用场景分析、后续跟进行动。",
+        scenario: "灵感捕捉、创意记录、随笔写作、项目构思",
+        tags: ["日记", "创意", "记录"],
+        category: "日记",
+        deps: "--",
+        content: `# 灵感日记模板
+
+## 今日灵感
+
+> {{一句话记录今天的灵感}}
+
+## 详细内容
+
+{{展开描述灵感的内容}}
+
+## 可应用场景
+
+- {{场景1}}
+- {{场景2}}
+
+## 后续跟进
+
+| 行动 | 时间 | 状态 |
+|------|:----:|:----:|
+| {{行动}} | {{日期}} | {{待办}} |
+
+---
+> 记录日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "todo",
+        name: "待办清单模板",
+        description: "三层优先级待办清单模板（P0/P1/P2）。包含今日待办、本周待办、长期待办，支持优先级排序和进度管理。",
+        scenario: "任务管理、每日计划、工作安排、GTD实践",
+        tags: ["效率", "任务", "计划"],
+        category: "日记",
+        deps: "--",
+        content: `# 待办清单模板
+
+## 今日待办（{{YYYY-MM-DD}}）
+
+### 高优先级 P0
+- [ ] {{任务内容}} | 预计：{{分钟}}
+- [ ] {{任务内容}} | 预计：{{分钟}}
+
+### 中优先级 P1
+- [ ] {{任务内容}} | 预计：{{分钟}}
+
+### 低优先级 P2
+- [ ] {{任务内容}} | 预计：{{分钟}}
+
+## 本周待办
+
+| 任务 | 优先级 | 预计日期 | 状态 |
+|------|:------:|:--------:|:----:|
+| {{任务}} | P0 | {{日期}} | 待开始 |
+| {{任务}} | P1 | {{日期}} | 待开始 |
+
+## 长期待办
+
+- {{任务}} | 目标日期：{{日期}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "work_review",
+        name: "工作复盘模板",
+        description: "工作复盘模板。包含项目回顾、成就与不足分析、经验教训总结、改进计划，帮助持续优化工作方法。",
+        scenario: "项目复盘、工作回顾、经验总结、团队回顾",
+        tags: ["复盘", "工作", "成长"],
+        category: "复盘",
+        deps: "--",
+        content: `# 工作复盘模板
+
+## 项目回顾
+
+> {{项目名称}} - {{时间段}}
+
+## 目标达成
+
+| 目标 | 目标值 | 实际值 | 达标率 |
+|------|:------:|:------:|:------:|
+| {{目标1}} | {{值}} | {{值}} | {{%}} |
+| {{目标2}} | {{值}} | {{值}} | {{%}} |
+
+## 成就
+
+1. {{成就描述}}
+2. {{成就描述}}
+
+## 不足
+
+1. {{不足描述}}
+   - 改进方向：{{方向}}
+
+## 经验教训
+
+- {{教训1}}
+- {{教训2}}
+
+## 下一步计划
+
+- [ ] {{行动项}}
+- [ ] {{行动项}}
+
+---
+> 复盘日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "health",
+        name: "健康管理模板",
+        description: "健康管理追踪模板。包含健康指标记录、运动计划、饮食记录、睡眠质量追踪、医疗记录。",
+        scenario: "健康管理、运动追踪、饮食记录、医疗档案",
+        tags: ["生活", "健康", "记录"],
+        category: "生活",
+        deps: "--",
+        content: `# 健康管理模板
+
+## 基本指标
+
+| 指标 | 当前值 | 目标值 | 记录日期 |
+|------|:------:|:------:|:--------:|
+| 体重 | {{kg}} | {{kg}} | {{日期}} |
+| 体脂率 | {{%}} | {{%}} | {{日期}} |
+
+## 运动记录
+
+| 日期 | 类型 | 时长 | 强度 | 备注 |
+|------|------|:----:|:----:|------|
+| {{日期}} | {{跑步/力量/瑜伽}} | {{分钟}} | {{低/中/高}} | {{备注}} |
+
+## 饮食记录
+
+### 早餐
+
+### 午餐
+
+### 晚餐
+
+## 睡眠
+
+- 入睡时间：{{时间}}
+- 起床时间：{{时间}}
+- 时长：{{小时}}
+- 质量：{{好/中/差}}
+
+---
+> 更新日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "competitor",
+        name: "竞品分析模板",
+        description: "竞品分析模板。包含竞品基本信息、功能对比、优劣势分析、市场定位、战略建议，支持多竞品横向对比。",
+        scenario: "竞品分析、市场调研、产品规划、商业分析",
+        tags: ["项目管理", "分析", "商业"],
+        category: "项目管理",
+        deps: "--",
+        content: `# 竞品分析模板
+
+## 基本信息
+
+| 维度 | 本产品 | 竞品A | 竞品B |
+|------|:------:|:-----:|:-----:|
+| 名称 | {{名称}} | {{名称}} | {{名称}} |
+| 定位 | {{定位}} | {{定位}} | {{定位}} |
+| 价格 | {{¥}} | {{¥}} | {{¥}} |
+
+## 功能对比
+
+| 功能 | 本产品 | 竞品A | 竞品B |
+|------|:------:|:-----:|:-----:|
+| {{功能1}} | ✓ | ✓ | ✗ |
+| {{功能2}} | ✓ | ✗ | ✓ |
+
+## 优劣势分析
+
+### 优势
+- {{优势}}
+
+### 劣势
+- {{劣势}}
+
+## 战略建议
+
+- {{建议1}}
+- {{建议2}}
+
+---
+> 分析日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "bug",
+        name: "错误日志模板",
+        description: "问题/Bug追踪模板。包含错误描述、重现步骤、环境信息、解决方案、状态追踪，适合开发者和技术团队。",
+        scenario: "Bug追踪、问题管理、技术记录、Debug记录",
+        tags: ["项目管理", "技术", "记录"],
+        category: "项目管理",
+        deps: "--",
+        content: `# 错误日志模板
+
+## 错误信息
+
+- **标题：** {{简短描述}}
+- **严重程度：** {{P0紧急/P1高/P2中/P3低}}
+- **状态：** {{待修复/修复中/已修复/已关闭}}
+
+## 错误描述
+
+{{详细描述}}
+
+## 重现步骤
+
+1. {{步骤1}}
+2. {{步骤2}}
+3. {{步骤3}}
+
+## 环境信息
+
+- **系统：** {{OS版本}}
+- **浏览器/版本：** {{信息}}
+- **其他：** {{信息}}
+
+## 解决方案
+
+{{解决方案描述}}
+
+## 相关链接
+
+- {{链接1}}
+- {{链接2}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "prd",
+        name: "产品需求文档模板",
+        description: "产品需求文档（PRD）模板。包含产品背景、目标用户、功能需求列表、优先级排序、验收标准。",
+        scenario: "产品设计、需求管理、功能规划、版本迭代",
+        tags: ["项目管理", "产品", "文档"],
+        category: "项目管理",
+        deps: "--",
+        content: `# 产品需求文档
+
+## 产品背景
+
+- **项目名称：** {{名称}}
+- **版本号：** {{版本}}
+- **产品经理：** {{姓名}}
+- **目标上线日期：** {{日期}}
+
+## 目标用户
+
+- {{用户画像1}}
+- {{用户画像2}}
+
+## 功能需求
+
+### P0 必需
+- [ ] {{功能描述}}
+- [ ] {{功能描述}}
+
+### P1 重要
+- [ ] {{功能描述}}
+
+### P2 可选
+- [ ] {{功能描述}}
+
+## 验收标准
+
+1. {{标准1}}
+2. {{标准2}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "interview",
+        name: "面试记录模板",
+        description: "面试记录模板。包含候选人信息、面试评价、技术能力评估、沟通表现、录用建议。",
+        scenario: "招聘面试、候选人评估、人事记录、团队建设",
+        tags: ["管理", "人事", "记录"],
+        category: "项目管理",
+        deps: "--",
+        content: `# 面试记录模板
+
+## 基本信息
+
+| 字段 | 内容 |
+|------|------|
+| 候选人 | {{姓名}} |
+| 应聘岗位 | {{岗位}} |
+| 面试时间 | {{日期}} |
+| 面试官 | {{姓名}} |
+
+## 面试评价
+
+### 专业技能
+- {{评价}}
+
+### 项目经验
+- {{评价}}
+
+### 沟通能力
+- {{评价}}
+
+### 团队匹配
+- {{评价}}
+
+## 综合评分
+
+技术能力：{{1-5}}
+沟通表达：{{1-5}}
+文化匹配：{{1-5}}
+
+## 录用建议
+
+- [ ] 强烈推荐
+- [ ] 可以考虑
+- [ ] 不推荐
+
+## 备注
+
+{{补充说明}}
+
+---
+> 面试日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "content_idea",
+        name: "内容选题库模板",
+        description: "内容选题管理模板。包含选题标题、类型标签、目标受众、内容要点、发布状态，适合内容创作者管理选题。",
+        scenario: "选题管理、内容规划、自媒体运营、创作管理",
+        tags: ["写作", "内容", "创意"],
+        category: "笔记",
+        deps: "--",
+        content: `# 内容选题库模板
+
+## 选题列表
+
+| # | 标题 | 类型 | 状态 | 优先级 |
+|:-:|------|------|:----:|:------:|
+| 1 | {{标题}} | {{文章/视频/播客}} | {{待写/进行中/已发布}} | {{P0/P1/P2}} |
+
+## 选题详情：{{标题}}
+
+### 核心观点
+{{一句话说明}}
+
+### 目标受众
+{{描述}}
+
+### 内容大纲
+1. {{要点1}}
+2. {{要点2}}
+3. {{要点3}}
+
+### 参考资料
+- {{链接/书名}}
+
+### 发布时间
+{{日期}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "feedback",
+        name: "用户反馈收集模板",
+        description: "用户反馈收集与追踪模板。包含反馈来源、内容记录、分类标签、处理状态、后续跟进。",
+        scenario: "用户研究、反馈管理、产品迭代、客户服务",
+        tags: ["项目管理", "用户", "记录"],
+        category: "项目管理",
+        deps: "--",
+        content: `# 用户反馈收集模板
+
+## 反馈信息
+
+| 字段 | 内容 |
+|------|------|
+| 用户 | {{姓名/ID}} |
+| 来源 | {{问卷/客服/社区/访谈}} |
+| 反馈日期 | {{YYYY-MM-DD}} |
+| 相关产品 | {{产品名称}} |
+
+## 反馈内容
+
+{{详细描述}}
+
+## 分类
+
+- **类型：** {{功能建议/Bug/体验/其他}}
+- **优先级：** {{P0/P1/P2/P3}}
+- **状态：** {{待处理/处理中/已解决/已关闭}}
+
+## 处理方案
+
+{{处理方案描述}}
+
+## 跟进记录
+
+| 日期 | 动作 | 负责人 |
+|------|------|:------:|
+| {{日期}} | {{动作}} | {{姓名}} |
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "project_review",
+        name: "项目复盘模板",
+        description: "项目结项复盘模板。包含项目概览、数据回顾、成功因素、失败原因、经验教训清单、改进建议。",
+        scenario: "项目结项、团队回顾、经验沉淀、迭代改进",
+        tags: ["复盘", "项目管理", "成长"],
+        category: "复盘",
+        deps: "--",
+        content: `# 项目复盘模板
+
+## 项目概览
+
+- **项目名称：** {{名称}}
+- **时间范围：** {{起止日期}}
+- **团队成员：** {{名单}}
+
+## 目标回顾
+
+| 目标 | 预期 | 实际 | 达标率 |
+|------|:----:|:----:|:------:|
+| {{目标}} | {{值}} | {{值}} | {{%}} |
+
+## 做得好的
+
+1. {{内容}}
+2. {{内容}}
+3. {{内容}}
+
+## 可以改进的
+
+1. {{内容}}
+   - 改进方案：{{方案}}
+2. {{内容}}
+   - 改进方案：{{方案}}
+
+## 经验教训
+
+### 技术层面
+- {{教训}}
+
+### 流程层面
+- {{教训}}
+
+### 团队层面
+- {{教训}}
+
+## 行动项
+
+- [ ] {{改进措施}} | 负责人：{{姓名}} | 截止：{{日期}}
+
+---
+> 复盘日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "shopping",
+        name: "购物清单模板",
+        description: "购物清单模板。包含商品名称、数量、预算、优先级、购买状态，支持分类和预算控制。",
+        scenario: "日常购物、超市采购、家居购物、礼物清单",
+        tags: ["生活", "购物", "计划"],
+        category: "生活",
+        deps: "--",
+        content: `# 购物清单模板
+
+## 采购信息
+
+- **采购日期：** {{YYYY-MM-DD}}
+- **预算总额：** {{¥}}
+- **采购地点：** {{超市/线上}}
+
+## 清单
+
+| # | 商品 | 数量 | 预算 | 优先级 | 状态 |
+|:-:|------|:----:|:----:|:------:|:----:|
+| 1 | {{商品}} | {{数量}} | {{¥}} | {{高/中/低}} | {{待购/已购}} |
+
+## 备注
+
+- {{备注信息}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "reading_v2",
+        name: "读书笔记模板v2",
+        description: "进阶版读书笔记模板，更简洁的设计。聚焦三核心观点、实践计划与关联笔记，适合快速阅读记录。",
+        scenario: "快速阅读记录、读书卡片、知识管理",
+        tags: ["笔记", "读书", "学习"],
+        category: "笔记",
+        deps: "--",
+        content: `# 读书笔记 v2
+
+## 书籍信息
+
+- **书名：** {{书名}}
+- **作者：** {{作者}}
+- **评分：** {{1-5}}
+
+## 三个核心观点
+
+### 1. {{观点}}
+
+### 2. {{观点}}
+
+### 3. {{观点}}
+
+## 对我影响最大的一点
+
+{{内容}}
+
+## 实践计划
+
+- [ ] {{行动项}}
+- [ ] {{行动项}}
+
+## 关联笔记
+
+- [[]]
+- [[]]
+
+---
+> 读于：{{YYYY-MM}}`
+      },
+      {
+        id: "creative",
+        name: "创意收集模板",
+        description: "创意收集与孵化模板。包含创意标题、灵感来源、可行性评估、潜在价值、下一步行动。",
+        scenario: "创意管理、头脑风暴、项目构思、创新孵化",
+        tags: ["创意", "记录", "写作"],
+        category: "笔记",
+        deps: "--",
+        content: `# 创意收集模板
+
+## 创意名称
+
+> {{一句话描述}}
+
+## 灵感来源
+
+{{什么触发了这个创意}}
+
+## 可行性评估
+
+| 维度 | 评分 | 说明 |
+|------|:----:|------|
+| 兴趣度 | {{1-5}} | {{说明}} |
+| 可行性 | {{1-5}} | {{说明}} |
+| 价值 | {{1-5}} | {{说明}} |
+
+## 潜在形式
+
+- [ ] 文章
+- [ ] 视频
+- [ ] 项目
+- [ ] 产品
+
+## 下一步
+
+- {{第一步行动}}
+
+---
+> 记录日期：{{YYYY-MM-DD}}`
+      },
+      // === 新增模板 ===
+      {
+        id: "zettelkasten",
+        name: "Zettelkasten卡片笔记",
+        description: "卢曼卡片笔记法模板，原子化记录每个想法，通过链接构建知识网络。包含卡片编号、核心观点、来源、关联卡片。",
+        scenario: "知识管理、卡片笔记、概念整理、长期学习",
+        tags: ["笔记", "Zettelkasten", "知识管理"],
+        category: "笔记",
+        deps: "--",
+        content: `# Zettelkasten 卡片笔记
+
+## 卡片编号
+{{YYYYMMDDHHMM}}
+
+## 核心观点
+> {{一句话总结核心观点}}
+
+## 正文
+{{详细内容，保持原子化，只包含一个概念}}
+
+## 来源
+- {{书籍/文章/课程名称}}
+- 页码：{{页码}}
+
+## 关联卡片
+- [[卡片编号1]] - {{关联说明}}
+- [[卡片编号2]] - {{关联说明}}
+
+## 标签
+#zettelkasten #{{主题}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "daily_note_quick",
+        name: "Daily Note快速记录",
+        description: "极简Daily Note模板，无需Templater，适合快速记录当日重点、待办事项和灵感碎片。",
+        scenario: "每日快速记录、工作日志、轻量日记",
+        tags: ["日记", "效率", "Daily Note"],
+        category: "日记",
+        deps: "--",
+        content: `# {{date}} {{weekday}}
+
+## 📋 今日待办
+- [ ]
+- [ ]
+- [ ]
+
+## 📝 工作记录
+
+## 💡 灵感碎片
+
+## 📖 今日收获
+
+## 😊 心情
+{{心情描述}}`
+      },
+      {
+        id: "monthly_review",
+        name: "月报模板",
+        description: "月度复盘与总结模板。包含本月核心数据、目标达成率、亮点与遗憾、下月规划，适合个人和团队月度总结。",
+        scenario: "月度总结、团队月报、绩效回顾、计划制定",
+        tags: ["复盘", "月报", "管理"],
+        category: "复盘",
+        deps: "--",
+        content: `# {{月份}}月度复盘
+
+## 本月概览
+> {{一句话总结本月}}
+
+## 目标达成
+| 目标 | 目标值 | 实际值 | 达成率 |
+|------|:------:|:------:|:------:|
+| {{目标1}} | {{值}} | {{值}} | {{%}} |
+| {{目标2}} | {{值}} | {{值}} | {{%}} |
+
+## 核心数据
+| 指标 | 本月 | 上月 | 环比 |
+|------|:----:|:----:|:----:|
+| {{指标1}} | {{值}} | {{值}} | {{%}} |
+| {{指标2}} | {{值}} | {{值}} | {{%}} |
+
+## 本月亮点
+1. {{亮点描述}}
+2. {{亮点描述}}
+
+## 本月遗憾
+1. {{遗憾描述}}
+2. {{遗憾描述}}
+
+## 下月计划
+### 重点目标
+1. {{目标}}
+2. {{目标}}
+
+### 关键行动
+- {{行动项}}
+- {{行动项}}
+
+---
+> 月份：{{YYYY-MM}} | 复盘日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "kanban_board",
+        name: "Kanban看板模板",
+        description: "可视化看板管理模板，支持待办/进行中/已完成/阻塞四列，适合个人任务看板或轻量项目管理。",
+        scenario: "任务管理、敏捷开发、个人看板、工作流管理",
+        tags: ["项目管理", "Kanban", "效率"],
+        category: "项目管理",
+        deps: "--",
+        content: `# Kanban 看板
+
+## 📥 待办（Backlog）
+- [ ] {{任务}} | 优先级：{{P0/P1/P2}} | 预计：{{工时}}
+- [ ] {{任务}} | 优先级：{{P0/P1/P2}} | 预计：{{工时}}
+
+## 🔄 进行中（In Progress）
+- [ ] {{任务}} | 开始：{{日期}} | 截止：{{日期}}
+- [ ] {{任务}} | 开始：{{日期}} | 截止：{{日期}}
+
+## ✅ 已完成（Done）
+- [x] {{任务}} | 完成：{{日期}}
+- [x] {{任务}} | 完成：{{日期}}
+
+## 🚫 阻塞（Blocked）
+- [ ] {{任务}} | 阻塞原因：{{原因}} | 依赖：{{依赖项}}
+
+---
+> 更新日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "weekly_planning",
+        name: "周计划模板",
+        description: "周计划制定模板。包含本周三个核心目标、每日任务分配、优先级管理、时间块规划。",
+        scenario: "周计划、时间管理、目标拆解、效率提升",
+        tags: ["计划", "效率", "目标"],
+        category: "目标",
+        deps: "--",
+        content: `# 第{{N}}周计划（{{YYYY-MM-DD}} ~ {{YYYY-MM-DD}}）
+
+## 本周三个核心目标
+1. {{核心目标1}}
+2. {{核心目标2}}
+3. {{核心目标3}}
+
+## 每日计划
+
+### 周一 {{日期}}
+- [ ] P0: {{最重要的事}}
+- [ ] P1: {{次重要的事}}
+
+### 周二 {{日期}}
+- [ ] P0: {{最重要的事}}
+- [ ] P1: {{次重要的事}}
+
+### 周三 {{日期}}
+- [ ] P0: {{最重要的事}}
+- [ ] P1: {{次重要的事}}
+
+### 周四 {{日期}}
+- [ ] P0: {{最重要的事}}
+- [ ] P1: {{次重要的事}}
+
+### 周五 {{日期}}
+- [ ] P0: {{最重要的事}}
+- [ ] P1: {{次重要的事}}
+
+## 本周重点关注
+- {{关注事项}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "podcast_note",
+        name: "播客笔记模板",
+        description: "播客收听笔记模板。包含播客信息、核心观点、金句摘录、个人感悟、行动启发。",
+        scenario: "播客笔记、知识输入、学习记录、内容创作",
+        tags: ["笔记", "学习", "播客"],
+        category: "笔记",
+        deps: "--",
+        content: `# 播客笔记
+
+## 播客信息
+- **节目名称：** {{名称}}
+- **期数：** {{EP编号}}
+- **嘉宾：** {{姓名}}
+- **时长：** {{分钟}}
+- **收听日期：** {{YYYY-MM-DD}}
+
+## 一句话总结
+> {{核心收获}}
+
+## 核心观点/框架
+1. {{观点1}}
+2. {{观点2}}
+3. {{观点3}}
+
+## 金句摘录
+> "{{金句}}" — {{谁说的}}
+
+## 个人感悟
+{{思考和共鸣}}
+
+## 行动启发
+- [ ] {{行动项}}
+
+## 相关笔记
+- [[]]
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "course_note",
+        name: "课程笔记模板",
+        description: "在线课程学习笔记模板。包含课程信息、章节笔记、关键概念、作业记录、学习反思。",
+        scenario: "在线学习、MOOC课程、培训记录、技能提升",
+        tags: ["笔记", "学习", "课程"],
+        category: "笔记",
+        deps: "--",
+        content: `# 课程笔记
+
+## 课程信息
+- **课程名称：** {{名称}}
+- **平台：** {{平台}}
+- **讲师：** {{姓名}}
+- **学习进度：** {{章节N/M}}
+
+## 章节 {{编号}}：{{标题}}
+
+### 关键概念
+- {{概念1}}：{{解释}}
+- {{概念2}}：{{解释}}
+
+### 重点整理
+{{核心内容总结}}
+
+### 疑问
+- {{未理解的部分}}
+
+## 作业/练习
+- {{作业描述}}
+- 完成状态：{{已完成/进行中/未开始}}
+
+## 学习反思
+{{收获和思考}}
+
+---
+> 学习日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "gtd_inbox",
+        name: "GTD收件箱模板",
+        description: "GTD方法中的收件箱管理模板。收集所有待处理事项，定期清空归类到对应清单中。",
+        scenario: "GTD实践、任务收集、工作流管理、效率系统",
+        tags: ["效率", "GTD", "任务"],
+        category: "日记",
+        deps: "--",
+        content: `# GTD 收件箱
+
+## 📥 待处理收集
+- [ ] {{事项}} | {{来源}}
+- [ ] {{事项}} | {{来源}}
+- [ ] {{事项}} | {{来源}}
+
+## ⚡ 两分钟法则（立即执行）
+- [x] {{已完成事项}}
+- [x] {{已完成事项}}
+
+## 📅 日程安排（特定时间）
+| 事项 | 时间 | 日期 |
+|------|:----:|:----:|
+| {{事项}} | {{时间}} | {{日期}} |
+
+## 🗂️ 项目清单
+| 项目 | 下一步行动 | 截止日期 |
+|------|-----------|:--------:|
+| {{项目}} | {{行动}} | {{日期}} |
+
+## 📋 等待清单
+| 事项 | 等待谁 | 开始日期 |
+|-----|--------|:--------:|
+| {{事项}} | {{姓名}} | {{日期}} |
+
+## 📁 参考资料
+- {{链接/文件}}
+
+---
+> 清空日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "topic_research",
+        name: "主题研究模板",
+        description: "深度主题研究笔记模板。包含研究问题、信息来源、论点收集、证据评估、结论输出。",
+        scenario: "学术研究、行业调研、深度阅读、议题分析",
+        tags: ["笔记", "研究", "分析"],
+        category: "笔记",
+        deps: "--",
+        content: `# 主题研究笔记
+
+## 研究问题
+> {{核心研究问题}}
+
+## 信息来源
+| 来源 | 类型 | 可信度 | 关键内容 |
+|------|------|:------:|----------|
+| {{来源}} | {{论文/书籍/文章}} | {{高/中/低}} | {{摘要}} |
+
+## 论点收集
+
+### 支持论点
+1. {{论点}} — {{证据}}
+
+### 反对论点
+1. {{论点}} — {{证据}}
+
+## 证据评估
+- 优势证据：{{筛选后的有力证据}}
+- 证据缺口：{{缺失的信息}}
+
+## 初步结论
+{{基于现有证据的结论}}
+
+## 待探索方向
+- [ ] {{方向1}}
+- [ ] {{方向2}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "mood_tracker",
+        name: "情绪追踪模板",
+        description: "情绪记录与追踪模板。每日记录情绪状态、触发因素、应对策略，帮助了解情绪模式和改善心理健康。",
+        scenario: "心理健康、情绪管理、自我觉察、心理咨询",
+        tags: ["生活", "健康", "心理"],
+        category: "生活",
+        deps: "--",
+        content: `# 情绪追踪
+
+## 今日情绪
+- **主导情绪：** {{开心/平静/焦虑/悲伤/愤怒}}
+- **强度：** {{1-10}}
+- **能量水平：** {{1-10}}
+
+## 触发因素
+- {{什么引发了情绪变化}}
+
+## 身体感受
+- {{身体的反应}}
+
+## 应对策略
+- [ ] {{深呼吸/冥想/散步/倾诉}}
+
+## 今日感恩
+1. {{感恩的事}}
+2. {{感恩的事}}
+
+## 自我对话
+> {{对自己说的话}}
+
+---
+> 日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "book_list",
+        name: "书单管理模板",
+        description: "阅读清单管理模板。包含想读/在读/已读状态管理，阅读优先级、评分系统、笔记链接。",
+        scenario: "阅读计划、书单管理、年度阅读目标",
+        tags: ["读书", "计划", "管理"],
+        category: "目标",
+        deps: "--",
+        content: `# 我的书单
+
+## 📚 想读
+| 书名 | 作者 | 优先级 | 推荐理由 |
+|------|------|:------:|----------|
+| {{书名}} | {{作者}} | {{高/中/低}} | {{理由}} |
+
+## 📖 在读
+| 书名 | 进度 | 开始日期 |
+|------|:----:|:--------:|
+| {{书名}} | {{%}} | {{日期}} |
+
+## ✅ 已读
+| 书名 | 评分 | 读完日期 | 笔记链接 |
+|------|:----:|:--------:|----------|
+| {{书名}} | {{1-5}} | {{日期}} | [[]] |
+
+## 年度阅读目标
+- 目标：{{N}}本
+- 当前：{{N}}本
+- 完成率：{{%}}
+
+---
+> 更新日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "skill_acquisition",
+        name: "技能学习计划模板",
+        description: "技能学习规划模板。包含目标技能、学习路径拆解、资源清单、练习计划、里程碑检查。",
+        scenario: "技能学习、职业发展、自学规划、刻意练习",
+        tags: ["学习", "技能", "计划"],
+        category: "目标",
+        deps: "--",
+        content: `# 技能学习计划
+
+## 目标技能
+> {{要学习的技能名称}}
+
+## 学习动机
+- 为什么学：{{原因}}
+- 预期水平：{{入门/熟练/精通}}
+- 截止日期：{{YYYY-MM-DD}}
+
+## 学习路径
+| 阶段 | 内容 | 资源 | 预计时长 | 状态 |
+|:----:|------|------|:--------:|:----:|
+| 1 | {{基础概念}} | {{资源}} | {{小时}} | {{状态}} |
+| 2 | {{实践练习}} | {{资源}} | {{小时}} | {{状态}} |
+| 3 | {{项目实战}} | {{资源}} | {{小时}} | {{状态}} |
+
+## 每日练习
+- 时间：{{时间段}}
+- 时长：{{分钟}}
+
+## 里程碑检查
+- [ ] M1: {{里程碑}} — 截止：{{日期}}
+- [ ] M2: {{里程碑}} — 截止：{{日期}}
+- [ ] M3: {{里程碑}} — 截止：{{日期}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "meeting_agenda",
+        name: "会议议程模板",
+        description: "会议议程准备模板。提前规划会议议题、时间分配、预期产出、参会人角色。",
+        scenario: "会议策划、团队周会、工作坊、研讨会",
+        tags: ["会议", "项目管理", "计划"],
+        category: "项目管理",
+        deps: "--",
+        content: `# 会议议程
+
+## 基本信息
+- **会议主题：** {{主题}}
+- **时间：** {{YYYY-MM-DD HH:mm}}
+- **时长：** {{分钟}}
+- **主持人：** {{姓名}}
+- **参会人：** {{名单}}
+
+## 会议目标
+> {{本次会议要达成的目标}}
+
+## 议程安排
+
+| 时间 | 议题 | 主讲人 | 形式 |
+|:----:|------|:------:|:----:|
+| 0-10min | {{议题}} | {{姓名}} | {{汇报/讨论}} |
+| 10-25min | {{议题}} | {{姓名}} | {{汇报/讨论}} |
+| 25-30min | {{总结与行动}} | {{姓名}} | {{确认}} |
+
+## 前置准备
+- [ ] {{参会人需提前阅读的材料}}
+- [ ] {{需提前准备的设备}}
+
+## 预期产出
+- {{决策/方案/行动清单}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "daily_standup",
+        name: "每日站会笔记模板",
+        description: "敏捷开发每日站会记录模板。三问结构：昨天做了什么、今天做什么、遇到什么障碍。",
+        scenario: "敏捷开发、Scrum站会、团队同步、日常沟通",
+        tags: ["项目管理", "敏捷", "会议"],
+        category: "项目管理",
+        deps: "--",
+        content: `# 每日站会 — {{YYYY-MM-DD}}
+
+## 我的三问
+
+### 昨天做了什么？
+- {{完成的工作}}
+- {{完成的工作}}
+
+### 今天计划做什么？
+- {{计划的工作}}
+- {{计划的工作}}
+
+### 有什么障碍？
+- {{遇到的问题/阻塞项}}
+
+## 团队同步
+- {{需要和团队对齐的信息}}
+
+## 会后行动
+- [ ] {{行动项}}
+
+---
+> 会议时间：{{HH:mm}}`
+      },
+      {
+        id: "vision_board",
+        name: "愿景板模板",
+        description: "个人/团队愿景规划模板。包含长期愿景、核心价值观、五年目标、一年目标、季度行动。",
+        scenario: "人生规划、公司愿景、团队建设、战略规划",
+        tags: ["目标", "规划", "愿景"],
+        category: "目标",
+        deps: "--",
+        content: `# 愿景板
+
+## 我的愿景
+> {{未来5-10年想要达到的理想状态}}
+
+## 核心价值观
+1. {{价值观1}} — {{解释}}
+2. {{价值观2}} — {{解释}}
+3. {{价值观3}} — {{解释}}
+
+## 五年目标
+| 领域 | 目标 | 关键指标 |
+|------|------|----------|
+| 职业 | {{目标}} | {{指标}} |
+| 财务 | {{目标}} | {{指标}} |
+| 健康 | {{目标}} | {{指标}} |
+| 关系 | {{目标}} | {{指标}} |
+| 成长 | {{目标}} | {{指标}} |
+
+## 一年目标
+- {{目标1}}
+- {{目标2}}
+- {{目标3}}
+
+## 本季度行动
+- [ ] {{行动1}}
+- [ ] {{行动2}}
+- [ ] {{行动3}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "retrospective",
+        name: "Sprint回顾模板",
+        description: "敏捷Sprint回顾模板。包含Sprint概览、做得好的、可以改进的、行动项，持续改进团队流程。",
+        scenario: "Sprint回顾、敏捷迭代、团队改进、流程优化",
+        tags: ["复盘", "敏捷", "项目管理"],
+        category: "复盘",
+        deps: "--",
+        content: `# Sprint {{编号}} 回顾
+
+## Sprint概览
+- **周期：** {{YYYY-MM-DD}} ~ {{YYYY-MM-DD}}
+- **团队：** {{团队名称}}
+- **完成故事点：** {{N}} / {{N}}
+- **速度：** {{N}} 点/Sprint
+
+## 做得好的 👍
+1. {{内容}}
+2. {{内容}}
+3. {{内容}}
+
+## 可以改进的 👎
+1. {{内容}}
+2. {{内容}}
+
+## 困惑的问题 ❓
+- {{问题1}}
+- {{问题2}}
+
+## 行动项 🎯
+| 事项 | 负责人 | 截止日期 |
+|-----|--------|:--------:|
+| {{事项}} | {{姓名}} | {{日期}} |
+| {{事项}} | {{姓名}} | {{日期}} |
+
+---
+> 回顾日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "project_weekly_report",
+        name: "项目周报模板",
+        description: "项目周报模板。包含本周进展、关键指标、风险状态、下周计划、资源需求，适合项目经理使用。",
+        scenario: "项目管理、团队汇报、进度跟踪、向上管理",
+        tags: ["项目管理", "周报", "汇报"],
+        category: "项目管理",
+        deps: "--",
+        content: `# 项目周报
+
+## 项目信息
+- **项目名称：** {{名称}}
+- **周次：** 第{{N}}周（{{YYYY-MM-DD}} ~ {{YYYY-MM-DD}}）
+- **报告人：** {{姓名}}
+
+## 本周进展
+| 里程碑 | 计划完成 | 实际完成 | 偏差 |
+|--------|:--------:|:--------:|:----:|
+| {{M1}} | {{日期}} | {{日期}} | {{偏差}} |
+| {{M2}} | {{日期}} | {{日期}} | {{偏差}} |
+
+## 关键指标
+| 指标 | 本周 | 上周 | 趋势 |
+|------|:----:|:----:|:----:|
+| {{指标}} | {{值}} | {{值}} | {{↑/↓/→}} |
+
+## 风险与问题
+| 风险 | 等级 | 应对措施 | 状态 |
+|------|:----:|----------|:----:|
+| {{风险}} | {{高/中/低}} | {{措施}} | {{状态}} |
+
+## 下周计划
+1. {{计划事项}}
+2. {{计划事项}}
+
+## 需要的支持
+- {{资源需求}}
+
+---
+> 报告日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "idea_pipeline",
+        name: "创意管道模板",
+        description: "创意项目管道管理模板。从灵感到执行的全流程跟踪，包含创意孵化、验证、开发、发布阶段。",
+        scenario: "创意管理、产品孵化、项目启动、创新创业",
+        tags: ["创意", "项目管理", "产品"],
+        category: "项目管理",
+        deps: "--",
+        content: `# 创意管道
+
+## 创意池（Ideas）
+| 创意 | 来源 | 优先级 | 状态 |
+|------|------|:------:|:----:|
+| {{创意}} | {{来源}} | {{1-5}} | {{待验证}} |
+
+## 验证中（Validating）
+| 创意 | 假设 | 验证方法 | 结果 |
+|------|------|----------|------|
+| {{创意}} | {{假设}} | {{方法}} | {{结果}} |
+
+## 开发中（Building）
+| 项目 | 阶段 | 截止日期 | 负责人 |
+|------|:----:|:--------:|:------:|
+| {{项目}} | {{MVP/迭代}} | {{日期}} | {{姓名}} |
+
+## 已发布（Launched）
+| 项目 | 上线日期 | 关键指标 | 下一步 |
+|------|:--------:|----------|--------|
+| {{项目}} | {{日期}} | {{数据}} | {{计划}} |
+
+---
+> 更新日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "daily_log",
+        name: "工作日志模板",
+        description: "结构化工作日志模板。记录工作时间线、完成事项、精力波动、明日计划，适合需要详细记录工作内容的人。",
+        scenario: "工作日志、时间管理、效率追踪、远程办公",
+        tags: ["日记", "效率", "工作"],
+        category: "日记",
+        deps: "--",
+        content: `# 工作日志 — {{YYYY-MM-DD}} {{weekday}}
+
+## ⏰ 时间线
+
+### 上午（09:00 - 12:00）
+- {{做了什么}}
+- {{做了什么}}
+
+### 下午（13:00 - 18:00）
+- {{做了什么}}
+- {{做了什么}}
+
+### 晚上（19:00 - ）
+- {{做了什么}}
+
+## ✅ 完成事项
+- [x] {{事项}}
+- [x] {{事项}}
+
+## 📊 精力曲线
+| 时段 | 精力水平(1-10) |
+|:----:|:--------------:|
+| 早上 | {{N}} |
+| 上午 | {{N}} |
+| 下午 | {{N}} |
+| 晚上 | {{N}} |
+
+## 📝 备注
+{{其他想记录的内容}}
+
+---
+> 创建时间：{{HH:mm}}`
+      },
+      {
+        id: "event_planning",
+        name: "活动策划模板",
+        description: "活动策划与执行模板。包含活动基本信息、时间线、预算、任务分配、应急预案。",
+        scenario: "团建活动、线下活动、线上直播、会议策划",
+        tags: ["项目管理", "活动", "计划"],
+        category: "项目管理",
+        deps: "--",
+        content: `# 活动策划
+
+## 基本信息
+- **活动名称：** {{名称}}
+- **日期：** {{YYYY-MM-DD}}
+- **地点：** {{地点}}
+- **预计人数：** {{N}}人
+- **预算：** {{¥}}
+
+## 活动目标
+> {{活动的核心目标}}
+
+## 时间线
+
+### 活动前
+| 任务 | 负责人 | 截止日期 | 状态 |
+|------|--------|:--------:|:----:|
+| {{任务}} | {{姓名}} | {{日期}} | {{状态}} |
+
+### 活动当天
+| 时间 | 环节 | 负责人 | 备注 |
+|:----:|------|:------:|------|
+| {{时间}} | {{环节}} | {{姓名}} | {{备注}} |
+
+### 活动后
+- [ ] {{跟进事项}}
+
+## 预算明细
+| 项目 | 预算 | 实际 | 备注 |
+|------|:----:|:----:|------|
+| {{项目}} | {{¥}} | {{¥}} | {{备注}} |
+
+## 应急预案
+- {{风险}} → {{应对方案}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "gratitude_journal",
+        name: "感恩日记模板",
+        description: "感恩日记模板。每天记录三件感恩的事、一个美好时刻、今天学到的东西，提升幸福感和正念。",
+        scenario: "个人成长、正念练习、幸福感提升、心理健康",
+        tags: ["日记", "成长", "心理"],
+        category: "日记",
+        deps: "--",
+        content: `# 感恩日记 — {{YYYY-MM-DD}}
+
+## 今天感恩的三件事
+1. {{感恩的事}}
+2. {{感恩的事}}
+3. {{感恩的事}}
+
+## 今天最美好的时刻
+> {{描述那个瞬间}}
+
+## 今天学到的东西
+- {{新知识或新视角}}
+
+## 今天帮助过的人
+- {{帮助了谁/做了什么}}
+
+## 对自己的肯定
+> {{今天做得好的地方}}
+
+## 明天的期待
+- {{期待的事}}
+
+---
+> 晚安：{{HH:mm}}`
+      },
+      {
+        id: "interview_prep",
+        name: "面试准备模板",
+        description: "求职面试准备模板。包含公司研究、岗位分析、自我介绍准备、常见问题回答、提问清单。",
+        scenario: "求职面试、跳槽准备、职业规划、面经整理",
+        tags: ["工作", "求职", "准备"],
+        category: "目标",
+        deps: "--",
+        content: `# 面试准备
+
+## 基本信息
+- **公司：** {{公司名称}}
+- **岗位：** {{岗位名称}}
+- **面试时间：** {{YYYY-MM-DD HH:mm}}
+- **面试形式：** {{线上/线下}}
+
+## 公司研究
+- 主营业务：{{描述}}
+- 最近动态：{{新闻/产品更新}}
+- 企业文化：{{描述}}
+
+## 自我介绍（30秒/1分钟/3分钟）
+{{分别准备不同时长的版本}}
+
+## 常见问题准备
+
+### 行为面试（STAR法则）
+| 问题 | 情境 | 任务 | 行动 | 结果 |
+|------|------|------|------|------|
+| {{问题}} | {{S}} | {{T}} | {{A}} | {{R}} |
+
+### 技术问题
+- {{问题1}} → {{答案}}
+- {{问题2}} → {{答案}}
+
+## 我的提问
+- [ ] {{问面试官的问题1}}
+- [ ] {{问面试官的问题2}}
+
+---
+> 准备日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "time_audit",
+        name: "时间审计模板",
+        description: "时间使用审计模板。按活动类别记录时间分配，分析时间使用的效率和改进空间。",
+        scenario: "时间管理、效率提升、习惯调整、生产力分析",
+        tags: ["效率", "时间管理", "分析"],
+        category: "复盘",
+        deps: "--",
+        content: `# 时间审计
+
+## 审计周期
+{{YYYY-MM-DD}} ~ {{YYYY-MM-DD}}
+
+## 时间分配记录
+
+| 活动类别 | 耗时(小时) | 占比 | 评价 |
+|----------|:----------:|:----:|:----:|
+| 工作 | {{N}} | {{%}} | {{高效/低效}} |
+| 学习 | {{N}} | {{%}} | {{高效/低效}} |
+| 娱乐 | {{N}} | {{%}} | {{合理/过多}} |
+| 社交 | {{N}} | {{%}} | {{合理/过多}} |
+| 运动 | {{N}} | {{%}} | {{合理/不足}} |
+| 睡眠 | {{N}} | {{%}} | {{充足/不足}} |
+
+## 时间杀手
+1. {{最大的时间浪费来源}}
+2. {{其次的浪费来源}}
+
+## 优化计划
+- [ ] {{改进措施1}}
+- [ ] {{改进措施2}}
+
+---
+> 审计日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "learning_path",
+        name: "学习路径图模板",
+        description: "长期学习路径规划模板。包含主题领域、学习阶段划分、资源列表、实践项目、里程碑检查点。",
+        scenario: "长期学习、知识体系构建、专业技能成长",
+        tags: ["学习", "计划", "技能"],
+        category: "目标",
+        deps: "--",
+        content: `# 学习路径图
+
+## 学习主题
+> {{领域名称}}
+
+## 当前水平
+{{入门 / 初级 / 中级 / 高级}}
+
+## 学习阶段
+
+### 第一阶段：基础入门
+**预计用时：** {{N}}周
+- [ ] {{模块1}}
+- [ ] {{模块2}}
+- [ ] {{模块3}}
+**里程碑：** {{可衡量的成果}}
+
+### 第二阶段：实践应用
+**预计用时：** {{N}}周
+- [ ] {{小项目1}}
+- [ ] {{小项目2}}
+**里程碑：** {{可衡量的成果}}
+
+### 第三阶段：深入精通
+**预计用时：** {{N}}周/月
+- [ ] {{复杂项目}}
+- [ ] {{知识输出}}
+**里程碑：** {{可衡量的成果}}
+
+## 推荐资源
+| 资源名称 | 类型 | 优先级 |
+|----------|:----:|:------:|
+| {{名称}} | {{书/课/文档}} | {{高/中/低}} |
+
+## 实践项目清单
+1. {{项目1}} — {{难度}} — {{状态}}
+2. {{项目2}} — {{难度}} — {{状态}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "project_proposal",
+        name: "项目提案模板",
+        description: "项目提案文档模板。包含项目背景、目标、范围、预算、时间线、风险评估，用于项目立项审批。",
+        scenario: "项目立项、方案汇报、决策申请、商业提案",
+        tags: ["项目管理", "提案", "文档"],
+        category: "项目管理",
+        deps: "--",
+        content: `# 项目提案
+
+## 项目概述
+- **项目名称：** {{名称}}
+- **提案人：** {{姓名}}
+- **提案日期：** {{YYYY-MM-DD}}
+- **预计周期：** {{起止日期}}
+
+## 项目背景
+{{为什么要做这个项目}}
+
+## 项目目标
+- **业务目标：** {{目标}}
+- **关键成果：** {{KR}}
+
+## 项目范围
+
+### 包含
+- {{范围项}}
+
+### 不包含
+- {{排除项}}
+
+## 预算估算
+| 类别 | 金额 | 说明 |
+|------|:----:|------|
+| 人力 | {{¥}} | {{说明}} |
+| 资源 | {{¥}} | {{说明}} |
+| 总计 | {{¥}} | - |
+
+## 时间线
+| 阶段 | 时间 | 交付物 |
+|:----:|:----:|--------|
+| {{阶段}} | {{时间}} | {{交付物}} |
+
+## 风险评估
+| 风险 | 概率 | 影响 | 应对 |
+|------|:----:|:----:|------|
+| {{风险}} | {{高/中/低}} | {{高/中/低}} | {{措施}} |
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "contact_book",
+        name: "通讯录模板",
+        description: "个人通讯录管理模板。包含联系人基本信息、社交账号、备注标签、最近互动记录。",
+        scenario: "人脉管理、社交关系维护、商务联系",
+        tags: ["生活", "管理", "社交"],
+        category: "生活",
+        deps: "--",
+        content: `# 通讯录
+
+## {{联系人姓名}}
+
+### 基本信息
+| 字段 | 内容 |
+|------|------|
+| 姓名 | {{姓名}} |
+| 电话 | {{电话}} |
+| 邮箱 | {{邮箱}} |
+| 公司 | {{公司}} |
+| 职位 | {{职位}} |
+
+### 社交账号
+- 微信：{{ID}}
+- 微博：{{ID}}
+- LinkedIn：{{URL}}
+
+### 标签
+{{朋友/同事/客户/导师}}
+
+### 最近互动
+| 日期 | 方式 | 内容 |
+|------|:----:|------|
+| {{日期}} | {{微信/电话/见面}} | {{内容}} |
+
+### 备注
+{{其他信息}}
+
+---
+> 更新日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "weekly_dinner",
+        name: "每周菜单模板",
+        description: "每周饮食规划模板。包含每日三餐计划、食材采购清单、营养均衡检查，适合家庭饮食管理。",
+        scenario: "家庭生活、饮食规划、健康饮食、食材管理",
+        tags: ["生活", "饮食", "计划"],
+        category: "生活",
+        deps: "--",
+        content: `# 第{{N}}周菜单
+
+## 每日计划
+
+| 日期 | 早餐 | 午餐 | 晚餐 |
+|------|:----:|:----:|:----:|
+| 周一 | {{早餐}} | {{午餐}} | {{晚餐}} |
+| 周二 | {{早餐}} | {{午餐}} | {{晚餐}} |
+| 周三 | {{早餐}} | {{午餐}} | {{晚餐}} |
+| 周四 | {{早餐}} | {{午餐}} | {{晚餐}} |
+| 周五 | {{早餐}} | {{午餐}} | {{晚餐}} |
+| 周六 | {{早餐}} | {{午餐}} | {{晚餐}} |
+| 周日 | {{早餐}} | {{午餐}} | {{晚餐}} |
+
+## 食材采购清单
+
+### 蔬菜
+- [ ] {{蔬菜}}
+- [ ] {{蔬菜}}
+
+### 肉类
+- [ ] {{肉类}}
+- [ ] {{肉类}}
+
+### 调味料
+- [ ] {{调味料}}
+
+## 营养检查
+- [ ] 每日蔬菜摄入达标
+- [ ] 蛋白质来源多样化
+- [ ] 少油少盐
+
+---
+> 周期：{{YYYY-MM-DD}} ~ {{YYYY-MM-DD}}`
+      },
+      {
+        id: "packing_list",
+        name: "行李清单模板",
+        description: "出行行李打包清单模板。分类列出必备物品，避免遗漏，适合旅行和出差打包参考。",
+        scenario: "旅行打包、出差准备、搬家整理",
+        tags: ["生活", "旅行", "计划"],
+        category: "生活",
+        deps: "--",
+        content: `# 行李清单
+
+## 出行信息
+- **目的地：** {{地点}}
+- **天数：** {{N}}天
+- **出行方式：** {{飞机/火车/自驾}}
+
+## 证件和文件
+- [ ] 身份证
+- [ ] 护照（如需）
+- [ ] 机票/火车票
+- [ ] 酒店预订确认
+- [ ] 行程单打印件
+
+## 电子设备
+- [ ] 手机 + 充电器
+- [ ] 充电宝
+- [ ] 耳机
+- [ ] 相机 + 充电器
+- [ ] 转换插头
+
+## 衣物
+- [ ] 上衣 × {{N}}
+- [ ] 裤子 × {{N}}
+- [ ] 内衣 × {{N}}
+- [ ] 袜子 × {{N}}
+- [ ] 外套
+- [ ] 鞋子
+
+## 洗漱用品
+- [ ] 牙刷/牙膏
+- [ ] 洗面奶
+- [ ] 防晒霜
+- [ ] 护肤品
+
+## 药品
+- [ ] 感冒药
+- [ ] 创可贴
+- [ ] 肠胃药
+
+---
+> 打包日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "blog_post",
+        name: "博客文章模板",
+        description: "博客文章写作模板。包含标题、摘要、正文分段、引用来源、SEO关键词、行动号召。",
+        scenario: "个人博客、技术博客、自媒体文章、专栏写作",
+        tags: ["写作", "博客", "内容"],
+        category: "笔记",
+        deps: "--",
+        content: `# 博客文章
+
+## 基本信息
+- **标题：** {{标题}}
+- **摘要：** {{一句话摘要}}
+- **标签：** {{标签1, 标签2, 标签3}}
+- **预计阅读时间：** {{N}}分钟
+
+## SEO信息
+- **目标关键词：** {{关键词}}
+- **Meta描述：** {{描述}}
+
+## 正文
+
+### 引言
+{{吸引注意力的开头}}
+
+### 主体
+#### 第一部分：{{标题}}
+{{内容}}
+
+#### 第二部分：{{标题}}
+{{内容}}
+
+#### 第三部分：{{标题}}
+{{内容}}
+
+### 结论
+{{总结 + 行动号召}}
+
+## 参考资料
+- {{链接1}}
+- {{链接2}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "newsletter",
+        name: "Newsletter模板",
+        description: "邮件通讯Newsletter写作模板。包含主题行、开头问候、主要内容板块、推荐资源、结尾互动。",
+        scenario: "邮件营销、Newsletter运营、读者沟通、个人品牌",
+        tags: ["写作", "运营", "内容"],
+        category: "笔记",
+        deps: "--",
+        content: `# Newsletter — {{期数}}
+
+## 基本信息
+- **主题行：** {{吸引人的标题}}
+- **发送日期：** {{YYYY-MM-DD}}
+- **目标读者：** {{受众描述}}
+
+## 开头问候
+{{亲切的问候语}}
+
+## 本期亮点
+> {{本期最值得关注的内容}}
+
+## 主要内容
+
+### {{板块一标题}}
+{{内容}}
+
+### {{板块二标题}}
+{{内容}}
+
+## 推荐资源
+- 📖 {{书籍/文章推荐}}
+- 🎧 {{播客推荐}}
+- 🛠️ {{工具推荐}}
+
+## 读者互动
+- {{问题/投票/调查}}
+
+## 结尾
+{{感谢阅读 + 下期预告}}
+
+---
+> 发送日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "movie_note",
+        name: "电影笔记模板",
+        description: "电影观影笔记模板。包含基本信息、剧情概要、印象深刻的场景、影评、金句摘录。",
+        scenario: "影评写作、观影记录、影视分析、内容创作",
+        tags: ["笔记", "电影", "创意"],
+        category: "笔记",
+        deps: "--",
+        content: `# 电影笔记
+
+## 基本信息
+- **片名：** {{片名}}
+- **导演：** {{姓名}}
+- **上映年份：** {{年份}}
+- **评分：** {{1-10}}
+
+## 观影信息
+- **观影日期：** {{YYYY-MM-DD}}
+- **观影方式：** {{影院/流媒体}}
+- **和谁一起看：** {{独自/伴侣/朋友}}
+
+## 剧情概要
+{{简要剧情描述}}
+
+## 印象最深的场景
+{{描述1-2个场景}}
+
+## 影评
+### 优点
+- {{优点1}}
+- {{优点2}}
+
+### 不足
+- {{不足1}}
+
+## 金句摘录
+> "{{金句}}"
+
+## 相关推荐
+- {{类似电影推荐}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "morning_routine",
+        name: "晨间惯例模板",
+        description: "晨间习惯追踪模板。设定晨间流程，包含起床时间、冥想、运动、阅读、计划今日等环节。",
+        scenario: "习惯养成、时间管理、健康生活、效率提升",
+        tags: ["生活", "习惯", "效率"],
+        category: "生活",
+        deps: "--",
+        content: `# 晨间惯例
+
+## 理想晨间流程
+
+| 时间 | 活动 | 时长 | 备注 |
+|:----:|------|:----:|------|
+| {{6:00}} | 起床 + 喝水 | 5min | {{备注}} |
+| {{6:05}} | 冥想 | 10min | {{备注}} |
+| {{6:15}} | 运动 | 20min | {{备注}} |
+| {{6:35}} | 阅读 | 20min | {{备注}} |
+| {{6:55}} | 计划今日 | 5min | {{备注}} |
+
+## 今日执行
+
+- [ ] {{起床时间：}}
+- [ ] 喝水 500ml
+- [ ] 冥想 {{N}}min
+- [ ] 运动 {{N}}min
+- [ ] 阅读 {{N}}min
+- [ ] 写下今日三个目标
+
+## 晨间状态
+- 睡眠质量：{{1-5}}
+- 醒来状态：{{精力充沛/一般/疲惫}}
+- 今日情绪：{{情绪词}}
+
+---
+> 日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "evening_routine",
+        name: "晚间惯例模板",
+        description: "晚间复盘与放松模板。包含今日回顾、明日准备、数字排毒、感恩练习、睡眠准备。",
+        scenario: "晚间复盘、睡眠质量、放松习惯、自我关怀",
+        tags: ["生活", "习惯", "复盘"],
+        category: "生活",
+        deps: "--",
+        content: `# 晚间惯例
+
+## 晚间流程
+
+| 时间 | 活动 | 时长 |
+|:----:|------|:----:|
+| {{21:00}} | 停止工作/学习 | - |
+| {{21:15}} | 整理房间 | 10min |
+| {{21:30}} | 洗漱 | 15min |
+| {{21:45}} | 写日记/复盘 | 10min |
+| {{22:00}} | 阅读（纸质书） | 20min |
+| {{22:20}} | 冥想/深呼吸 | 10min |
+| {{22:30}} | 关灯睡觉 | - |
+
+## 今日复盘
+- 三件好事：
+  1. {{好事1}}
+  2. {{好事2}}
+  3. {{好事3}}
+- 今天可以做得更好的是：{{反思}}
+
+## 明日准备
+- {{最重要的三件事}}
+- {{需要带的物品}}
+
+## 数字排毒
+- [ ] 睡前1小时不看手机
+- [ ] 手机放在客厅充电
+
+---
+> 日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "goal_tracking",
+        name: "目标追踪看板模板",
+        description: "多目标并行追踪看板。支持季度目标拆解到月度，可视化进度条，里程碑标记，适用多项目管理。",
+        scenario: "多目标管理、季度目标追踪、OKR跟进",
+        tags: ["目标", "追踪", "管理"],
+        category: "目标",
+        deps: "--",
+        content: `# 目标追踪看板
+
+## 季度目标
+> Q{{N}} {{年份}}
+
+### 目标1：{{目标名称}}
+**关键结果：**
+- KR1: {{描述}} | 进度：[████░░░░░░] {{%}}
+- KR2: {{描述}} | 进度：[██████░░░░] {{%}}
+- KR3: {{描述}} | 进度：[██░░░░░░░░] {{%}}
+
+**状态：** {{领先/正常/落后/危险}}
+
+### 目标2：{{目标名称}}
+**关键结果：**
+- KR1: {{描述}} | 进度：[████████░░] {{%}}
+- KR2: {{描述}} | 进度：[████░░░░░░] {{%}}
+
+**状态：** {{领先/正常/落后/危险}}
+
+### 目标3：{{目标名称}}
+**关键结果：**
+- KR1: {{描述}} | 进度：[██░░░░░░░░] {{%}}
+
+**状态：** {{领先/正常/落后/危险}}
+
+## 月度检查
+| 月份 | 目标1进度 | 目标2进度 | 目标3进度 | 备注 |
+|:----:|:---------:|:---------:|:---------:|------|
+| 第1月 | {{%}} | {{%}} | {{%}} | {{备注}} |
+| 第2月 | {{%}} | {{%}} | {{%}} | {{备注}} |
+| 第3月 | {{%}} | {{%}} | {{%}} | {{备注}} |
+
+## 关键里程碑
+- [ ] {{里程碑}} — 截止：{{日期}}
+- [ ] {{里程碑}} — 截止：{{日期}}
+
+---
+> 更新日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "workout_log",
+        name: "健身记录模板",
+        description: "健身训练记录模板。包含训练项目、组数次数、重量记录、身体围度、休息日追踪。",
+        scenario: "健身训练、运动追踪、体能管理、健康记录",
+        tags: ["生活", "健康", "运动"],
+        category: "生活",
+        deps: "--",
+        content: `# 健身记录
+
+## 训练日信息
+- **日期：** {{YYYY-MM-DD}}
+- **训练部位：** {{胸/背/腿/肩/手臂/核心}}
+- **训练时长：** {{分钟}}
+- **训练感受：** {{1-5}}
+
+## 训练项目
+
+### {{动作1}}
+| 组数 | 重量 | 次数 | 休息 |
+|:----:|:----:|:----:|:----:|
+| 1 | {{kg}} | {{N}} | {{秒}} |
+| 2 | {{kg}} | {{N}} | {{秒}} |
+| 3 | {{kg}} | {{N}} | {{秒}} |
+
+### {{动作2}}
+| 组数 | 重量 | 次数 | 休息 |
+|:----:|:----:|:----:|:----:|
+| 1 | {{kg}} | {{N}} | {{秒}} |
+| 2 | {{kg}} | {{N}} | {{秒}} |
+
+## 有氧运动
+- **类型：** {{跑步/单车/游泳}}
+- **时长：** {{分钟}}
+- **消耗：** {{千卡}}
+
+## 身体数据
+- 体重：{{kg}}
+- 腰围：{{cm}}
+
+## 备注
+{{训练感觉/需要改进的地方}}
+
+---
+> 记录日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "code_snippet",
+        name: "代码片段模板",
+        description: "代码片段归档模板。记录代码片段、语言、用途、依赖、使用示例，方便日后检索复用。",
+        scenario: "代码管理、开发者笔记、技术学习、知识库",
+        tags: ["笔记", "技术", "代码"],
+        category: "笔记",
+        deps: "--",
+        content: `# 代码片段
+
+## 基本信息
+- **名称：** {{片段名称}}
+- **语言：** {{Python/JS/Go等}}
+- **用途：** {{简短描述}}
+- **来源：** {{自己编写/StackOverflow/文档}}
+
+## 代码
+\`\`\`{{language}}
+{{代码内容}}
+\`\`\`
+
+## 使用示例
+\`\`\`{{language}}
+{{使用示例}}
+\`\`\`
+
+## 依赖/前置条件
+- {{依赖项}}
+
+## 注意事项
+- {{注意事项}}
+
+## 相关片段
+- [[]]
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "team_building",
+        name: "团队建设活动模板",
+        description: "团队建设活动策划模板。包含活动目标、形式选择、预算分配、分工安排、效果评估。",
+        scenario: "团队管理、员工关系、企业文化、部门活动",
+        tags: ["管理", "团队", "活动"],
+        category: "项目管理",
+        deps: "--",
+        content: `# 团队建设活动
+
+## 基本信息
+- **活动主题：** {{主题}}
+- **目的：** {{破冰/沟通/激励/放松}}
+- **日期：** {{YYYY-MM-DD}}
+- **时长：** {{小时}}
+- **地点：** {{室内/室外/线上}}
+- **参与人数：** {{N}}人
+- **人均预算：** {{¥}}
+
+## 活动目标
+1. {{目标1}}
+2. {{目标2}}
+
+## 活动流程
+| 时间 | 环节 | 负责人 | 物资 |
+|:----:|------|:------:|:----:|
+| {{时间}} | {{环节}} | {{姓名}} | {{物资}} |
+
+## 物资清单
+- [ ] {{物资1}}
+- [ ] {{物资2}}
+
+## 分工
+- 总策划：{{姓名}}
+- 物资采购：{{姓名}}
+- 现场协调：{{姓名}}
+- 摄影记录：{{姓名}}
+
+## 效果评估
+- 参与度：{{1-5}}
+- 满意度：{{1-5}}
+- 目标达成：{{是/否}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "perf_review",
+        name: "绩效评估模板",
+        description: "员工绩效评估模板。包含目标完成情况、能力评价、亮点与改进、发展建议、下期目标设定。",
+        scenario: "绩效管理、团队评估、员工发展、年度考核",
+        tags: ["管理", "绩效", "评估"],
+        category: "项目管理",
+        deps: "--",
+        content: `# 绩效评估
+
+## 基本信息
+- **员工姓名：** {{姓名}}
+- **职位：** {{职位}}
+- **评估周期：** {{YYYY-QN}}
+- **评估人：** {{姓名}}
+- **评估日期：** {{YYYY-MM-DD}}
+
+## 目标完成情况
+| 目标 | 目标值 | 实际值 | 完成度 |
+|------|:------:|:------:|:------:|
+| {{目标}} | {{值}} | {{值}} | {{%}} |
+
+## 能力评价
+| 能力维度 | 评分(1-5) | 说明 |
+|----------|:---------:|------|
+| 专业能力 | {{N}} | {{说明}} |
+| 沟通协作 | {{N}} | {{说明}} |
+| 解决问题 | {{N}} | {{说明}} |
+| 主动性 | {{N}} | {{说明}} |
+
+## 亮点
+1. {{亮点}}
+2. {{亮点}}
+
+## 待改进
+1. {{改进项}}
+2. {{改进项}}
+
+## 发展建议
+- {{培训/项目/晋升建议}}
+
+## 下期目标
+- [ ] {{目标1}} — 预期：{{日期}}
+- [ ] {{目标2}} — 预期：{{日期}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "api_doc",
+        name: "API接口文档模板",
+        description: "API接口文档记录模板。包含接口地址、请求方法、参数说明、响应格式、错误码、调用示例。",
+        scenario: "API开发、前后端联调、技术文档、接口规范",
+        tags: ["技术", "文档", "开发"],
+        category: "笔记",
+        deps: "--",
+        content: `# API 接口文档
+
+## 接口信息
+- **接口名称：** {{名称}}
+- **接口地址：** {{URL}}
+- **请求方法：** {{GET/POST/PUT/DELETE}}
+- **认证方式：** {{Token/OAuth/无}}
+- **版本：** {{v1}}
+
+## 请求参数
+
+### Headers
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|:----:|:----:|------|
+| {{Authorization}} | {{string}} | {{是}} | {{Bearer token}} |
+
+### Query/Body
+| 参数名 | 类型 | 必填 | 默认值 | 说明 |
+|--------|:----:|:----:|:------:|------|
+| {{参数}} | {{类型}} | {{是/否}} | {{值}} | {{说明}} |
+
+## 响应格式
+
+### 成功响应
+\`\`\`json
+{
+  "code": 200,
+  "message": "success",
+  "data": {}
+}
+\`\`\`
+
+### 错误码
+| 错误码 | 说明 | 处理方式 |
+|:------:|------|----------|
+| 400 | {{参数错误}} | {{检查参数}} |
+| 401 | {{未授权}} | {{重新登录}} |
+
+## 调用示例
+\`\`\`{{language}}
+{{示例代码}}
+\`\`\`
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "market_research",
+        name: "市场调研模板",
+        description: "市场调研报告模板。包含市场规模、竞争格局、用户画像、趋势分析、战略建议。",
+        scenario: "市场分析、商业调研、产品规划、战略决策",
+        tags: ["分析", "商业", "调研"],
+        category: "笔记",
+        deps: "--",
+        content: `# 市场调研报告
+
+## 调研概述
+- **调研主题：** {{主题}}
+- **调研范围：** {{范围}}
+- **调研方法：** {{桌面研究/问卷/访谈}}
+- **调研时间：** {{YYYY-MM-DD}} ~ {{YYYY-MM-DD}}
+
+## 市场规模
+- **全球市场：** {{¥/台/用户}}
+- **中国市场：** {{¥/台/用户}}
+- **年增长率：** {{CAGR}}
+- **预测规模（3年）：** {{¥/台/用户}}
+
+## 竞争格局
+| 玩家 | 市场份额 | 定位 | 优势 |
+|------|:--------:|:----:|:----:|
+| {{公司A}} | {{%}} | {{定位}} | {{优势}} |
+| {{公司B}} | {{%}} | {{定位}} | {{优势}} |
+
+## 用户画像
+- **年龄：** {{范围}}
+- **性别：** {{比例}}
+- **收入：** {{范围}}
+- **核心需求：** {{需求}}
+- **痛点：** {{痛点}}
+
+## 趋势分析
+1. {{趋势1}}
+2. {{趋势2}}
+
+## 战略建议
+- {{建议1}}
+- {{建议2}}
+
+---
+> 报告日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "learning_reflection",
+        name: "学习反思模板",
+        description: "深度学习反思模板。用四个问题引导深度思考：我学到了什么、与已有的知识如何联系、还有什么疑问、如何应用。",
+        scenario: "课后反思、学习总结、深度思考、知识内化",
+        tags: ["学习", "反思", "成长"],
+        category: "笔记",
+        deps: "--",
+        content: `# 学习反思
+
+## 基本信息
+- **学习内容：** {{主题}}
+- **学习日期：** {{YYYY-MM-DD}}
+- **学习时长：** {{分钟}}
+
+## 四问反思
+
+### 1. 我学到了什么？
+{{列出3-5个关键知识点}}
+
+### 2. 这与我已经知道的知识有什么联系？
+- 与 [[现有知识]] 的关联：{{描述}}
+- 与 [[已有经验]] 的印证：{{描述}}
+
+### 3. 我还有什么疑问？
+- {{疑问1}}
+- {{疑问2}}
+
+### 4. 我将如何应用？
+- [ ] {{短期应用}}
+- [ ] {{长期应用}}
+
+## 掌握程度自评
+- 概念理解：{{1-5}}
+- 能讲解给他人：{{是/否}}
+- 能实践应用：{{是/否}}
+
+---
+> 反思日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "work_from_home",
+        name: "远程办公模板",
+        description: "远程办公日常管理模板。包含工作区设置、每日打卡、沟通记录、任务追踪、能量管理。",
+        scenario: "远程办公、在家办公、自由职业、数字游民",
+        tags: ["工作", "效率", "生活"],
+        category: "生活",
+        deps: "--",
+        content: `# 远程办公日志
+
+## 日期
+{{YYYY-MM-DD}} {{weekday}}
+
+## 工作区设置
+- [ ] 桌面整洁
+- [ ] 灯光充足
+- [ ] 网络稳定
+- [ ] 水杯已满
+
+## 上下班打卡
+
+### 上班打卡：{{HH:mm}}
+**今日目标：**
+1. {{目标1}}
+2. {{目标2}}
+3. {{目标3}}
+
+### 下班打卡：{{HH:mm}}
+**今日完成：**
+- [x] {{完成事项}}
+- [x] {{完成事项}}
+
+## 沟通记录
+| 时间 | 对象 | 方式 | 内容 |
+|:----:|------|:----:|------|
+| {{时间}} | {{姓名}} | {{电话/消息}} | {{内容}} |
+
+## 能量管理
+| 时段 | 状态 | 备注 |
+|:----:|:----:|------|
+| 上午 | {{高/中/低}} | {{备注}} |
+| 下午 | {{高/中/低}} | {{备注}} |
+
+---
+> 记录日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "creative_brief",
+        name: "创意简报模板",
+        description: "创意简报模板。包含项目背景、目标受众、核心信息、调性要求、交付物、预算时间，适合广告和设计项目。",
+        scenario: "广告创意、设计项目、品牌传播、营销活动",
+        tags: ["创意", "写作", "管理"],
+        category: "笔记",
+        deps: "--",
+        content: `# 创意简报
+
+## 项目信息
+- **项目名称：** {{名称}}
+- **客户/品牌：** {{名称}}
+- **项目类型：** {{广告/设计/视频/文案}}
+- **截止日期：** {{YYYY-MM-DD}}
+
+## 项目背景
+{{项目背景描述}}
+
+## 目标受众
+- **人口特征：** {{年龄/性别/收入}}
+- **心理特征：** {{兴趣/价值观}}
+- **核心痛点：** {{痛点}}
+
+## 核心信息
+> {{一句话核心信息}}
+
+## 品牌调性
+- **关键词：** {{形容词1、形容词2、形容词3}}
+- **参考风格：** {{参考案例}}
+
+## 交付物清单
+| 交付物 | 规格 | 数量 | 状态 |
+|--------|------|:----:|:----:|
+| {{交付物}} | {{规格}} | {{N}} | {{状态}} |
+
+## 预算与时间
+- **预算：** {{¥}}
+- **关键节点：** {{时间线}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "reading_plan",
+        name: "月度阅读计划",
+        description: "月度阅读规划模板。设定月度阅读目标、书单列表、每日阅读打卡、阅读笔记链接。",
+        scenario: "阅读计划、读书管理、习惯养成、知识输入",
+        tags: ["读书", "计划", "目标"],
+        category: "目标",
+        deps: "--",
+        content: `# {{月份}}月阅读计划
+
+## 本月目标
+- **阅读本数：** {{N}}本
+- **每日阅读时长：** {{分钟}}
+- **阅读主题：** {{主题}}
+
+## 书单
+
+### 精读书目
+| 书名 | 作者 | 页数 | 计划完成日 | 状态 |
+|------|------|:----:|:----------:|:----:|
+| {{书名}} | {{作者}} | {{页}} | {{日期}} | {{状态}} |
+| {{书名}} | {{作者}} | {{页}} | {{日期}} | {{状态}} |
+
+### 泛读书目
+- {{书名}} — {{作者}}
+
+## 阅读打卡
+
+| 日期 | 书名 | 页码 | 时长 | 感想 |
+|------|------|:----:|:----:|------|
+| 1日 | {{书名}} | {{页}} | {{min}} | {{感想}} |
+| 2日 | {{书名}} | {{页}} | {{min}} | {{感想}} |
+
+## 笔记链接
+- [[]] — {{书名}}
+- [[]] — {{书名}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "project_retro",
+        name: "项目结项复盘模板",
+        description: "项目结项复盘模板。包含项目数据回顾、成功要素、失败原因、经验教训、后续行动。",
+        scenario: "项目结项、团队回顾、经验沉淀、持续改进",
+        tags: ["复盘", "项目管理", "总结"],
+        category: "复盘",
+        deps: "--",
+        content: `# 项目结项复盘
+
+## 项目概览
+- **项目名称：** {{名称}}
+- **起止时间：** {{日期}} ~ {{日期}}
+- **项目规模：** {{人天/预算}}
+- **团队成员：** {{名单}}
+
+## 目标达成情况
+| 目标 | 目标值 | 实际值 | 达成率 |
+|------|:------:|:------:|:------:|
+| {{目标}} | {{值}} | {{值}} | {{%}} |
+
+## 成功要素
+1. {{要素1}}
+2. {{要素2}}
+3. {{要素3}}
+
+## 失败原因
+1. {{原因1}}
+2. {{原因2}}
+
+## 经验教训
+
+### 技术层面
+- {{教训}}
+
+### 管理层面
+- {{教训}}
+
+### 沟通层面
+- {{教训}}
+
+## 后续行动
+- [ ] {{行动项}}
+- [ ] {{行动项}}
+
+## 可复用资产
+- {{文档/代码/流程}}
+
+---
+> 复盘日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "note_archive",
+        name: "笔记归档模板",
+        description: "笔记归档索引模板。定期整理和归档旧笔记，按主题分类，标注归档日期和状态。",
+        scenario: "知识管理、笔记整理、信息归档、第二大脑维护",
+        tags: ["笔记", "管理", "知识管理"],
+        category: "笔记",
+        deps: "--",
+        content: `# 笔记归档
+
+## 归档批次信息
+- **归档日期：** {{YYYY-MM-DD}}
+- **归档范围：** {{日期范围}}
+- **归档数量：** {{N}}篇
+
+## 按主题归档
+
+### {{主题1}}
+| 笔记标题 | 原始日期 | 归档位置 | 状态 |
+|----------|:--------:|----------|:----:|
+| [[标题]] | {{日期}} | {{路径}} | {{保留/删除}} |
+
+### {{主题2}}
+| 笔记标题 | 原始日期 | 归档位置 | 状态 |
+|----------|:--------:|----------|:----:|
+| [[标题]] | {{日期}} | {{路径}} | {{保留/删除}} |
+
+## 删除清单
+以下笔记已不再需要，可以安全删除：
+- [[标题]] — 原因：{{原因}}
+
+## 归档后待办
+- [ ] 更新主页索引
+- [ ] 更新标签体系
+
+---
+> 归档日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "daily_metrics",
+        name: "每日数据看板模板",
+        description: "个人关键指标每日追踪模板。包含工作/学习/健康/财务等维度的量化数据记录。",
+        scenario: "个人数据追踪、量化自我、习惯量化、绩效管理",
+        tags: ["日记", "数据", "效率"],
+        category: "日记",
+        deps: "--",
+        content: `# 每日数据看板 — {{YYYY-MM-DD}}
+
+## 🎯 工作指标
+- 深度工作时长：{{小时}}
+- 完成任务数：{{N}}
+- 会议时长：{{分钟}}
+
+## 📚 学习指标
+- 阅读时长：{{分钟}}
+- 阅读页数：{{页}}
+- 学习笔记：{{N}}篇
+
+## 💪 健康指标
+- 睡眠时长：{{小时}}
+- 运动时长：{{分钟}}
+- 喝水杯数：{{杯}}
+- 步数：{{N}}
+
+## 💰 财务指标
+- 今日支出：{{¥}}
+- 支出分类：{{类别}}
+
+## 📊 综合评分
+- 生产力：{{1-10}}
+- 满意度：{{1-10}}
+- 精力值：{{1-10}}
+
+---
+> 日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "personality_notes",
+        name: "人物观察笔记模板",
+        description: "人物观察与记录模板。记录观察对象的言行特点、思维方式、值得学习之处，适合人物研究和写作素材收集。",
+        scenario: "写作素材、人物研究、社交观察、角色塑造",
+        tags: ["笔记", "写作", "创意"],
+        category: "笔记",
+        deps: "--",
+        content: `# 人物观察笔记
+
+## 基本信息
+- **观察对象：** {{姓名/代号}}
+- **与我的关系：** {{朋友/同事/公众人物}}
+- **观察日期：** {{YYYY-MM-DD}}
+
+## 第一印象
+{{初次接触时的印象}}
+
+## 言行特点
+- **说话方式：** {{语速/用词/语气}}
+- **行为习惯：** {{习惯性动作/日常行为}}
+- **思维方式：** {{逻辑/直觉/系统}}
+
+## 值得学习之处
+1. {{优点1}}
+2. {{优点2}}
+
+## 需要警惕之处
+1. {{缺点1}}
+
+## 给我的启发
+{{从这个人物身上学到的道理}}
+
+## 备注
+{{其他观察记录}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "swot_analysis",
+        name: "SWOT分析模板",
+        description: "SWOT分析模板。从优势、劣势、机会、威胁四个维度进行战略分析，适用于个人和商业场景。",
+        scenario: "战略规划、竞争分析、个人定位、项目评估",
+        tags: ["分析", "管理", "战略"],
+        category: "笔记",
+        deps: "--",
+        content: `# SWOT 分析
+
+## 分析对象
+{{组织/个人/项目名称}}
+
+## 分析日期
+{{YYYY-MM-DD}}
+
+## 内部因素
+
+### S - 优势（Strengths）
+1. {{优势1}}
+2. {{优势2}}
+3. {{优势3}}
+
+### W - 劣势（Weaknesses）
+1. {{劣势1}}
+2. {{劣势2}}
+
+## 外部因素
+
+### O - 机会（Opportunities）
+1. {{机会1}}
+2. {{机会2}}
+
+### T - 威胁（Threats）
+1. {{威胁1}}
+2. {{威胁2}}
+
+## 战略组合
+
+### SO策略（利用优势抓住机会）
+- {{策略1}}
+- {{策略2}}
+
+### WO策略（改进劣势抓住机会）
+- {{策略1}}
+
+### ST策略（利用优势抵御威胁）
+- {{策略1}}
+
+### WT策略（减少劣势回避威胁）
+- {{策略1}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "five_whys",
+        name: "5Why根因分析模板",
+        description: "根因分析模板，通过连续追问五次为什么，找出问题的根本原因和系统性解决方案。",
+        scenario: "问题解决、故障排查、流程改进、质量分析",
+        tags: ["分析", "问题", "管理"],
+        category: "笔记",
+        deps: "--",
+        content: `# 5Why 根因分析
+
+## 问题描述
+> {{需要解决的问题}}
+
+## 分析过程
+
+### Why 1：为什么{{问题}}？
+**因为：** {{直接原因1}}
+
+### Why 2：为什么{{原因1}}？
+**因为：** {{原因2}}
+
+### Why 3：为什么{{原因2}}？
+**因为：** {{原因3}}
+
+### Why 4：为什么{{原因3}}？
+**因为：** {{原因4}}
+
+### Why 5：为什么{{原因4}}？
+**因为：** {{根本原因}}
+
+## 根本原因
+> {{最终发现的根本原因}}
+
+## 解决方案
+
+### 临时措施
+- {{立即可以做的事}}
+
+### 长期措施
+- {{系统性解决方案}}
+
+### 预防措施
+- {{防止再次发生的措施}}
+
+---
+> 分析日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "daily_habit_tracker",
+        name: "每日习惯打卡模板",
+        description: "简洁每日习惯打卡模板。列出5-10个核心习惯，每日打勾追踪，月度统计完成率。",
+        scenario: "习惯养成、自律训练、每日打卡、行为管理",
+        tags: ["生活", "习惯", "效率"],
+        category: "生活",
+        deps: "--",
+        content: `# 每日习惯打卡 — {{YYYY-MM}}
+
+## 习惯列表
+
+| 习惯 | 1 | 2 | 3 | 4 | 5 | ... | 30 | 31 | 完成率 |
+|------|:-:|:-:|:-:|:-:|:-:|:---:|:--:|:--:|:------:|
+| 早起6:30 | | | | | | | | | {{%}} |
+| 冥想10min | | | | | | | | | {{%}} |
+| 阅读30min | | | | | | | | | {{%}} |
+| 运动30min | | | | | | | | | {{%}} |
+| 喝水8杯 | | | | | | | | | {{%}} |
+| 写作15min | | | | | | | | | {{%}} |
+| 早睡23:00 | | | | | | | | | {{%}} |
+
+## 统计
+- 本月最高连续打卡：{{N}}天
+- 最佳习惯：{{习惯名称}}
+- 最需改进：{{习惯名称}}
+
+## 月度反思
+{{习惯养成的经验教训}}
+
+---
+> 月份：{{YYYY-MM}}`
+      },
+      {
+        id: "weekly_meeting",
+        name: "周会记录模板",
+        description: "团队周会记录模板。按成员轮流汇报本周工作和下周计划，记录跨团队协调事项和决策。",
+        scenario: "团队周会、项目同步、部门会议、管理沟通",
+        tags: ["会议", "项目管理", "团队"],
+        category: "项目管理",
+        deps: "--",
+        content: `# 周会记录 — 第{{N}}周
+
+## 基本信息
+- **日期：** {{YYYY-MM-DD}}
+- **参会人：** {{名单}}
+- **记录人：** {{姓名}}
+
+## 各成员汇报
+
+### {{姓名}}
+**本周完成：**
+- {{事项}}
+- {{事项}}
+
+**下周计划：**
+- {{事项}}
+- {{事项}}
+
+**需要的帮助：**
+- {{需求}}
+
+### {{姓名}}
+**本周完成：**
+- {{事项}}
+- {{事项}}
+
+**下周计划：**
+- {{事项}}
+- {{事项}}
+
+**需要的帮助：**
+- {{需求}}
+
+## 跨团队协调
+| 事项 | 涉及团队 | 负责人 | 截止日期 |
+|------|----------|:------:|:--------:|
+| {{事项}} | {{团队}} | {{姓名}} | {{日期}} |
+
+## 会议决策
+1. {{决策1}}
+2. {{决策2}}
+
+## 散会时间
+{{HH:mm}}
+
+---
+> 记录日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "budget_plan",
+        name: "年度预算模板",
+        description: "年度预算规划模板。按月分解收入和支出，分类预算控制，实际支出追踪，偏差分析。",
+        scenario: "个人理财、家庭预算、财务规划、年度计划",
+        tags: ["财务", "计划", "管理"],
+        category: "生活",
+        deps: "--",
+        content: `# {{年份}}年度预算
+
+## 年度总览
+| 项目 | 预算 | 占比 |
+|------|:----:|:----:|
+| 总收入 | {{¥}} | 100% |
+| 总支出 | {{¥}} | {{%}} |
+| 储蓄目标 | {{¥}} | {{%}} |
+
+## 月度分解
+
+| 月份 | 收入 | 支出 | 结余 | 储蓄率 |
+|:----:|:----:|:----:|:----:|:------:|
+| 1月 | {{¥}} | {{¥}} | {{¥}} | {{%}} |
+| 2月 | {{¥}} | {{¥}} | {{¥}} | {{%}} |
+| 3月 | {{¥}} | {{¥}} | {{¥}} | {{%}} |
+
+## 支出分类预算
+| 类别 | 月预算 | 年预算 | 说明 |
+|------|:------:|:------:|------|
+| 住房 | {{¥}} | {{¥}} | {{说明}} |
+| 餐饮 | {{¥}} | {{¥}} | {{说明}} |
+| 交通 | {{¥}} | {{¥}} | {{说明}} |
+| 娱乐 | {{¥}} | {{¥}} | {{说明}} |
+| 学习 | {{¥}} | {{¥}} | {{说明}} |
+
+## 储蓄目标分解
+- 紧急备用金：{{¥}} — 截止：{{日期}}
+- 投资基金：{{¥}} — 截止：{{日期}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "daily_decision_log",
+        name: "每日决策日志模板",
+        description: "每日关键决策记录模板。记录每天的重要决策、决策依据、备选方案和预期结果，培养决策意识。",
+        scenario: "决策训练、个人成长、反思习惯、判断力提升",
+        tags: ["日记", "决策", "成长"],
+        category: "日记",
+        deps: "--",
+        content: `# 每日决策日志 — {{YYYY-MM-DD}}
+
+## 今日关键决策
+
+### 决策1
+- **决策内容：** {{决策}}
+- **备选方案：** {{方案A}} vs {{方案B}}
+- **决策依据：** {{理由}}
+- **预期结果：** {{预期}}
+- **决策质量自评：** {{1-5}}
+
+### 决策2
+- **决策内容：** {{决策}}
+- **备选方案：** {{方案A}} vs {{方案B}}
+- **决策依据：** {{理由}}
+- **预期结果：** {{预期}}
+- **决策质量自评：** {{1-5}}
+
+## 决策回顾（昨日决策结果）
+- 昨日决策：{{决策}}
+- 实际结果：{{结果}}
+- 偏差分析：{{偏差原因}}
+
+## 决策模式反思
+- 今日决策倾向：{{保守/冒险/拖延}}
+- 可以改进的地方：{{改进方向}}
+
+---
+> 记录日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "pomodoro_tracker",
+        name: "番茄工作法记录模板",
+        description: "番茄工作法追踪模板。记录每日番茄钟数量、任务分配、中断次数、专注力评估。",
+        scenario: "时间管理、专注训练、效率提升、工作任务管理",
+        tags: ["效率", "工作", "时间管理"],
+        category: "日记",
+        deps: "--",
+        content: `# 番茄工作法记录 — {{YYYY-MM-DD}}
+
+## 今日目标番茄数
+{{N}}个番茄钟
+
+## 番茄记录
+
+| # | 任务 | 时长 | 中断次数 | 专注度(1-5) | 备注 |
+|:-:|------|:----:|:--------:|:-----------:|------|
+| 1 | {{任务}} | 25min | {{N}} | {{N}} | {{备注}} |
+| 2 | {{任务}} | 25min | {{N}} | {{N}} | {{备注}} |
+| 3 | {{任务}} | 25min | {{N}} | {{N}} | {{备注}} |
+| 4 | {{任务}} | 25min | {{N}} | {{N}} | {{备注}} |
+
+## 统计
+- 完成番茄：{{N}}/{{N}}
+- 总专注时长：{{分钟}}
+- 平均专注度：{{N}}
+- 总中断次数：{{N}}
+
+## 中断分析
+- 内部中断（走神/想别的事）：{{N}}次
+- 外部中断（他人打扰）：{{N}}次
+
+## 优化建议
+{{提高专注力的方法}}
+
+---
+> 日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "project_handover",
+        name: "项目交接模板",
+        description: "项目交接文档模板。包含项目现状、关键文档、待办事项、联系人、风险提示，确保平滑交接。",
+        scenario: "工作交接、项目移交、离职交接、任务转交",
+        tags: ["项目管理", "文档", "工作"],
+        category: "项目管理",
+        deps: "--",
+        content: `# 项目交接文档
+
+## 交接信息
+- **项目名称：** {{名称}}
+- **交接人：** {{姓名}}
+- **接手人：** {{姓名}}
+- **交接日期：** {{YYYY-MM-DD}}
+- **预计过渡期：** {{N}}天
+
+## 项目现状
+- **当前阶段：** {{阶段}}
+- **关键进度：** {{描述}}
+- **下个里程碑：** {{事项}} — {{日期}}
+
+## 文档清单
+| 文档名称 | 位置 | 重要性 |
+|----------|:----:|:------:|
+| {{文档}} | {{路径}} | {{高/中/低}} |
+
+## 待办事项
+| 事项 | 优先级 | 截止日期 | 备注 |
+|------|:------:|:--------:|------|
+| {{事项}} | {{P0/P1/P2}} | {{日期}} | {{备注}} |
+
+## 关键联系人
+| 姓名 | 角色 | 联系方式 | 说明 |
+|------|:----:|:--------:|------|
+| {{姓名}} | {{角色}} | {{联系方式}} | {{说明}} |
+
+## 风险提示
+- {{风险1}}
+- {{风险2}}
+
+## 交接确认
+- [ ] 交接人已讲解完毕
+- [ ] 接手人无疑问
+- [ ] 所有账号/权限已移交
+
+---
+> 签署日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "life_os",
+        name: "Life OS仪表盘模板",
+        description: "Life OS个人仪表盘模板。整合目标、项目、习惯、财务、健康等多维度信息，全面管理个人生活。",
+        scenario: "个人管理、人生规划、综合管理、自我提升",
+        tags: ["管理", "目标", "生活"],
+        category: "目标",
+        deps: "--",
+        content: `# Life OS 仪表盘
+
+## 📅 当前聚焦
+- **季度目标：** {{QN目标}}
+- **本月重点：** {{重点}}
+- **本周焦点：** {{焦点}}
+
+## 🎯 目标进展
+| 领域 | 年度目标 | 当前进度 | 状态 |
+|------|:--------:|:--------:|:----:|
+| 职业 | {{目标}} | {{%}} | {{状态}} |
+| 财务 | {{目标}} | {{%}} | {{状态}} |
+| 健康 | {{目标}} | {{%}} | {{状态}} |
+| 学习 | {{目标}} | {{%}} | {{状态}} |
+| 社交 | {{目标}} | {{%}} | {{状态}} |
+
+## 📂 活跃项目
+1. [[项目A]] — {{状态}}
+2. [[项目B]] — {{状态}}
+3. [[项目C]] — {{状态}}
+
+## 🔄 习惯追踪
+- {{习惯1}}：连续{{N}}天
+- {{习惯2}}：连续{{N}}天
+- {{习惯3}}：连续{{N}}天
+
+## 💰 财务状况
+- 资产：{{¥}}
+- 负债：{{¥}}
+- 净值：{{¥}}
+
+## ❤️ 健康状态
+- 睡眠：{{小时}}
+- 运动：{{次/周}}
+- 情绪：{{状态}}
+
+## 📝 今日三个目标
+1. {{目标1}}
+2. {{目标2}}
+3. {{目标3}}
+
+---
+> 更新日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "personal_oki",
+        name: "个人OKI模板",
+        description: "个人OKI（Objectives & Key Initiatives）模板，聚焦目标和关键行动，适合个人年度和季度规划。",
+        scenario: "个人规划、季度目标、年度计划、自我管理",
+        tags: ["目标", "规划", "成长"],
+        category: "目标",
+        deps: "--",
+        content: `# 个人OKI
+
+## 周期
+{{Q1/Q2/Q3/Q4}} {{年份}}
+
+## Objective 1：{{目标描述}}
+
+### Key Initiatives
+| 关键行动 | 预期成果 | 时间线 | 状态 |
+|----------|----------|:------:|:----:|
+| {{行动1}} | {{成果}} | {{日期}} | {{状态}} |
+| {{行动2}} | {{成果}} | {{日期}} | {{状态}} |
+
+### 信心指数
+当前：{{N}}/10
+
+## Objective 2：{{目标描述}}
+
+### Key Initiatives
+| 关键行动 | 预期成果 | 时间线 | 状态 |
+|----------|----------|:------:|:----:|
+| {{行动1}} | {{成果}} | {{日期}} | {{状态}} |
+| {{行动2}} | {{成果}} | {{日期}} | {{状态}} |
+
+### 信心指数
+当前：{{N}}/10
+
+## 每周检查
+| 周次 | O1进展 | O2进展 | 反思 |
+|:----:|:------:|:------:|------|
+| W1 | {{%}} | {{%}} | {{反思}} |
+| W2 | {{%}} | {{%}} | {{反思}} |
+
+## 季度总结
+- 主要成就：{{成就}}
+- 经验教训：{{教训}}
+- 下季度调整：{{调整}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "project_brainstorm",
+        name: "项目头脑风暴模板",
+        description: "项目头脑风暴记录模板。发散收集创意，收敛分类整理，评估可行性和优先级，输出行动方案。",
+        scenario: "头脑风暴、创意发散、问题解决、项目启动",
+        tags: ["创意", "项目管理", "协作"],
+        category: "项目管理",
+        deps: "--",
+        content: `# 项目头脑风暴
+
+## 主题
+> {{头脑风暴的主题或问题}}
+
+## 规则
+- 数量优先，不评判
+- 鼓励疯狂想法
+- 在他人想法上叠加
+
+## 发散阶段
+
+### 🟢 第一轮（自由联想）
+1. {{想法}}
+2. {{想法}}
+3. {{想法}}
+4. {{想法}}
+5. {{想法}}
+
+### 🟡 第二轮（延伸想法）
+- {{基于想法1的延伸}}
+- {{基于想法3的延伸}}
+
+## 收敛阶段
+
+### 分类整理
+| 类别 | 想法 |
+|------|------|
+| {{类别1}} | {{想法编号}} |
+| {{类别2}} | {{想法编号}} |
+
+### 优先级矩阵
+**高价值 + 易实现：**
+- {{想法}}
+
+**高价值 + 难实现：**
+- {{想法}}
+
+**低价值 + 易实现：**
+- {{想法}}
+
+**低价值 + 难实现：**
+- （暂不关注）
+
+## 行动计划
+- [ ] {{行动项}} — 负责人：{{姓名}} — 截止：{{日期}}
+
+---
+> 日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "quarterly_objectives",
+        name: "季度目标拆解模板",
+        description: "季度目标逐月拆解模板。将季度目标分解为月度里程碑和每周行动，确保目标可执行可追踪。",
+        scenario: "季度规划、目标拆解、行动管理、进度追踪",
+        tags: ["目标", "计划", "管理"],
+        category: "目标",
+        deps: "--",
+        content: `# 季度目标拆解
+
+## Q{{N}} {{年份}}
+
+## 目标总览
+
+### 目标1：{{名称}}
+**衡量标准：** {{标准}}
+**优先级：** {{高/中/低}}
+
+### 目标2：{{名称}}
+**衡量标准：** {{标准}}
+**优先级：** {{高/中/低}}
+
+## 月度拆解
+
+### 第1个月：{{月份}}
+
+#### 里程碑
+- {{里程碑}}
+
+#### 每周行动
+| 周次 | 行动 | 预期产出 |
+|:----:|------|----------|
+| W1 | {{行动}} | {{产出}} |
+| W2 | {{行动}} | {{产出}} |
+| W3 | {{行动}} | {{产出}} |
+| W4 | {{行动}} | {{产出}} |
+
+### 第2个月：{{月份}}
+
+#### 里程碑
+- {{里程碑}}
+
+#### 每周行动
+同上格式
+
+### 第3个月：{{月份}}
+
+#### 里程碑
+- {{里程碑}}
+
+#### 每周行动
+同上格式
+
+## 季度末检查
+- [ ] 目标1完成度：{{%}}
+- [ ] 目标2完成度：{{%}}
+- [ ] 整体评价：{{评价}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "content_calendar",
+        name: "内容日历模板",
+        description: "内容发布日历模板。按月规划内容主题、发布平台、写作进度、推广渠道，适合自媒体和内容团队。",
+        scenario: "内容策划、自媒体运营、社交媒体管理、品牌传播",
+        tags: ["写作", "运营", "计划"],
+        category: "笔记",
+        deps: "--",
+        content: `# 内容日历
+
+## {{月份}} {{年份}}
+
+## 本周内容
+| 日期 | 平台 | 主题 | 格式 | 状态 | 负责人 |
+|:----:|:----:|------|:----:|:----:|:------:|
+| 周一 | {{平台}} | {{主题}} | {{图文/视频}} | {{状态}} | {{姓名}} |
+| 周三 | {{平台}} | {{主题}} | {{图文/视频}} | {{状态}} | {{姓名}} |
+| 周五 | {{平台}} | {{主题}} | {{图文/视频}} | {{状态}} | {{姓名}} |
+
+## 月度主题规划
+| 周次 | 主题方向 | 核心信息 | 目标受众 |
+|:----:|----------|----------|----------|
+| W1 | {{方向}} | {{信息}} | {{受众}} |
+| W2 | {{方向}} | {{信息}} | {{受众}} |
+| W3 | {{方向}} | {{信息}} | {{受众}} |
+| W4 | {{方向}} | {{信息}} | {{受众}} |
+
+## 内容仓库
+| 选题 | 类型 | 优先级 | 素材进度 | 写作进度 |
+|------|:----:|:------:|:--------:|:--------:|
+| {{选题}} | {{类型}} | {{P0/P1/P2}} | {{%}} | {{%}} |
+
+## 推广计划
+- {{推广渠道1}}：{{计划}}
+- {{推广渠道2}}：{{计划}}
+
+---
+> 创建日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "personal_knowledge_base",
+        name: "个人知识库索引模板",
+        description: "个人知识库主索引模板。按主题领域组织知识结构，记录知识库的目录结构和维护状态。",
+        scenario: "知识管理、第二大脑、信息组织、长期学习",
+        tags: ["笔记", "知识管理", "索引"],
+        category: "笔记",
+        deps: "--",
+        content: `# 个人知识库索引
+
+## 🧠 知识体系结构
+
+### 职业发展
+- [[职业规划]] — Updated: {{日期}}
+- [[技能树]] — Updated: {{日期}}
+- [[面试经验]] — Updated: {{日期}}
+
+### 学习成长
+- [[读书笔记索引]] — Updated: {{日期}}
+- [[课程笔记索引]] — Updated: {{日期}}
+- [[学习方法论]] — Updated: {{日期}}
+
+### 生活管理
+- [[健康管理]] — Updated: {{日期}}
+- [[财务管理]] — Updated: {{日期}}
+- [[习惯系统]] — Updated: {{日期}}
+
+### 创意输出
+- [[写作素材库]] — Updated: {{日期}}
+- [[项目创意池]] — Updated: {{日期}}
+
+## 📊 知识库统计
+- 总笔记数：{{N}}
+- 活跃主题：{{N}}
+- 最近更新：{{日期}}
+
+## 🔗 常用链接
+- [[Daily Note模板]]
+- [[周报模板]]
+- [[项目复盘模板]]
+
+---
+> 更新日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "daily_intention",
+        name: "每日意图设定模板",
+        description: "每日意图设定模板。以正念方式开启一天，设定今日意图、关注点、自我承诺，培养有意识的生活态度。",
+        scenario: "正念练习、自我成长、情绪管理、效率提升",
+        tags: ["日记", "成长", "心理"],
+        category: "日记",
+        deps: "--",
+        content: `# 每日意图 — {{YYYY-MM-DD}} {{weekday}}
+
+## 🌅 晨间
+
+### 今天的意图
+> {{我今天选择以什么样的状态度过}}
+
+### 今天的关注点
+- **关注什么：** {{关注的内容}}
+- **放下什么：** {{放下的执念}}
+
+### 今天的自我承诺
+> {{我承诺对自己和他人做什么}}
+
+### 今天的肯定语
+> {{一句鼓励自己的话}}
+
+## 🌙 晚间回顾
+
+### 今天实现了意图吗？
+{{是/否/部分}}
+**原因：** {{分析}}
+
+### 今天的收获
+- {{收获1}}
+- {{收获2}}
+
+### 对自己温和一点的提醒
+{{对自己说的话}}
+
+---
+> 日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "travel_journal",
+        name: "旅行日记模板",
+        description: "旅行日记记录模板。包含每日行程、所见所闻、美食体验、感想体会、照片记录。",
+        scenario: "旅行记录、游记写作、生活记录、个人回忆",
+        tags: ["生活", "旅行", "日记"],
+        category: "生活",
+        deps: "--",
+        content: `# 旅行日记
+
+## 基本信息
+- **目的地：** {{城市/地点}}
+- **旅行日期：** {{YYYY-MM-DD}}
+- **天数：** 第{{N}}天
+- **天气：** {{天气}}
+- **同行人：** {{名单}}
+
+## 今日行程
+| 时间 | 地点 | 活动 | 备注 |
+|:----:|:----:|:----:|:----:|
+| {{上午}} | {{地点}} | {{活动}} | {{备注}} |
+| {{下午}} | {{地点}} | {{活动}} | {{备注}} |
+| {{晚上}} | {{地点}} | {{活动}} | {{备注}} |
+
+## 🍜 美食记录
+- {{餐厅/小吃名称}} — {{评价}}
+
+## 📸 今日最佳
+{{最难忘的瞬间}}
+
+## 💭 旅途感想
+{{今日的思考和感悟}}
+
+## 📝 小贴士
+- {{给未来自己的旅行建议}}
+
+---
+> 记录日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "reading_highlight",
+        name: "阅读摘录模板",
+        description: "阅读摘录模板。专注金句摘抄和个人感悟，适合在阅读过程中快速记录最有触动的段落。",
+        scenario: "阅读笔记、金句收集、知识卡片、素材整理",
+        tags: ["读书", "笔记", "学习"],
+        category: "笔记",
+        deps: "--",
+        content: `# 阅读摘录
+
+## 来源
+- **书名：** {{书名}}
+- **作者：** {{作者}}
+- **页码：** {{页码}}
+
+## 摘录
+
+### 摘录1
+> "{{原文内容}}"
+
+**我的感悟：**
+{{为什么这段话触动我}}
+
+### 摘录2
+> "{{原文内容}}"
+
+**我的感悟：**
+{{为什么这段话触动我}}
+
+### 摘录3
+> "{{原文内容}}"
+
+**我的感悟：**
+{{为什么这段话触动我}}
+
+## 关联思考
+- 这让我想起了 [[]]
+- 这与 [[另一本书]] 的观点 {{一致/矛盾}}
+
+---
+> 阅读日期：{{YYYY-MM-DD}}`
+      },
+      {
+        id: "weekly_digest",
+        name: "每周精选模板",
+        description: "每周知识精选汇总模板。汇总一周内的阅读精华、好文推荐、产品发现、灵感记录。",
+        scenario: "信息管理、周回顾、知识汇总、内容策展",
+        tags: ["笔记", "学习", "信息"],
+        category: "复盘",
+        deps: "--",
+        content: `# 每周精选 — 第{{N}}周
+
+## 📚 本周阅读
+| 书名/文章 | 作者 | 核心收获 | 链接 |
+|-----------|------|----------|:----:|
+| {{标题}} | {{作者}} | {{收获}} | [[]] |
+
+## 🎧 本周播客/视频
+- {{节目}} — {{核心观点}}
+
+## 🛠️ 本周发现
+### 工具
+- {{工具名称}} — {{用途}} — {{链接}}
+
+### 好文
+- {{文章标题}} — {{一句话总结}} — {{链接}}
+
+## 💡 本周灵感
+- {{灵感1}}
+- {{灵感2}}
+
+## 📊 本周数据
+- 阅读时长：{{分钟}}
+- 笔记数量：{{N}}篇
+- 新想法：{{N}}个
+
+## 下周关注
+- {{关注主题}}
+- {{待探索方向}}
+
+---
+> 周次：{{YYYY-MM-DD}} ~ {{YYYY-MM-DD}}`
+      }
+    ];
+
+    // ========== 全局状态 ==========
+    let currentCategory = '全部';
+    let currentView = 'grid';
+    let currentPage = 1;
+    const pageSize = 12;
+    let filteredTemplates = [...templates];
+    let currentTemplateId = null;
+
+    // ========== 统计 ==========
+    function renderStats() {
+      const cats = new Set(templates.map(t => t.category));
+      const tags = new Set();
+      templates.forEach(t => t.tags.forEach(tag => tags.add(tag)));
+      document.getElementById('stats').innerHTML = `
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 stat-card">
+          <p class="text-2xl font-bold text-blue-600">${templates.length}</p>
+          <p class="text-xs text-gray-500 mt-1">模板总数</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 stat-card">
+          <p class="text-2xl font-bold text-purple-600">${cats.size}</p>
+          <p class="text-xs text-gray-500 mt-1">分类数量</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 stat-card">
+          <p class="text-2xl font-bold text-green-600">${tags.size}</p>
+          <p class="text-xs text-gray-500 mt-1">标签数量</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 stat-card">
+          <p class="text-2xl font-bold text-amber-600">${templates.filter(t => t.deps === '--').length}</p>
+          <p class="text-xs text-gray-500 mt-1">零依赖模板</p>
+        </div>
+      `;
+    }
+
+    // ========== 渲染 ==========
+    function render() {
+      const container = document.getElementById('results');
+      const start = (currentPage - 1) * pageSize;
+      const pageItems = filteredTemplates.slice(start, start + pageSize);
+
+      document.getElementById('resultCount').textContent = `共 ${filteredTemplates.length} 个模板，当前第 ${currentPage}/${Math.ceil(filteredTemplates.length / pageSize) || 1} 页`;
+
+      if (pageItems.length === 0) {
+        container.innerHTML = '<div class="col-span-full bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center"><i class="fa fa-inbox text-4xl text-gray-300 mb-3"></i><p class="text-gray-500">没有找到匹配的模板</p></div>';
+        renderPagination();
+        return;
+      }
+
+      if (currentView === 'grid') {
+        container.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4';
+        container.innerHTML = pageItems.map(t => buildCard(t)).join('');
+      } else {
+        container.className = 'space-y-3';
+        container.innerHTML = pageItems.map(t => buildListItem(t)).join('');
+      }
+
+      renderPagination();
+    }
+
+    function buildCard(t) {
+      const colorMap = {
+        '日记': 'from-amber-400 to-orange-400',
+        '笔记': 'from-blue-400 to-indigo-400',
+        '项目管理': 'from-emerald-400 to-teal-400',
+        '复盘': 'from-violet-400 to-purple-400',
+        '目标': 'from-rose-400 to-pink-400',
+        '生活': 'from-cyan-400 to-sky-400'
+      };
+      const gradient = colorMap[t.category] || 'from-gray-400 to-slate-400';
+      const userRating = getAvgRating(t.id);
+      const inCombo = isInCombiner(t.id);
+      return `<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden card-hover cursor-pointer fade-in" data-template-id="${t.id}" onclick="showModal('${t.id}')">
+        <div class="h-2 bg-gradient-to-r ${gradient}"></div>
+        <div class="p-5">
+          <div class="flex items-start justify-between mb-2">
+            <h3 class="font-bold text-gray-800 text-base leading-tight">${t.name}</h3>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 whitespace-nowrap ml-2">${t.category}</span>
+          </div>
+          <p class="text-gray-500 text-xs leading-relaxed mb-3 line-clamp-3">${t.description}</p>
+          <div class="flex flex-wrap gap-1 mb-2">
+            ${t.tags.slice(0, 3).map(tag => `<span class="text-xs px-2 py-0.5 bg-blue-50 text-blue-500 rounded-full">${tag}</span>`).join('')}
+          </div>
+          <div class="flex items-center justify-between mb-2">
+            <div class="rating-display" onclick="event.stopPropagation()">${userRating ? '<span class="text-xs">' + '⭐'.repeat(userRating) + '</span>' : '<span class="text-xs text-gray-300">未评分</span>'}</div>
+            <div onclick="event.stopPropagation()">
+              <button data-tid="${t.id}" onclick="event.stopPropagation();toggleCombiner('${t.id}')" class="combiner-btn w-6 h-6 rounded text-xs flex items-center justify-center transition ${inCombo ? 'bg-purple-100 text-purple-600' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}"><i class="fa ${inCombo ? 'fa-check' : 'fa-plus'}"></i></button>
+            </div>
+          </div>
+          <div class="flex items-center justify-between text-xs text-gray-400">
+            <span><i class="fa fa-cube"></i> ${t.deps === '--' ? '零依赖' : t.deps}</span>
+            <span class="text-blue-400"><i class="fa fa-eye"></i> 预览</span>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    function buildListItem(t) {
+      const userRating = getAvgRating(t.id);
+      const inCombo = isInCombiner(t.id);
+      return `<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 card-hover cursor-pointer fade-in flex items-center gap-4" data-template-id="${t.id}" onclick="showModal('${t.id}')">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center flex-shrink-0">
+          <i class="fa fa-file-text-o text-blue-400"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <h3 class="font-semibold text-gray-800 text-sm">${t.name}</h3>
+            <span class="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">${t.category}</span>
+          </div>
+          <p class="text-gray-400 text-xs mt-0.5 truncate">${t.scenario}</p>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          ${userRating ? `<span class="text-xs">${'⭐'.repeat(userRating)}</span>` : ''}
+          <button data-tid="${t.id}" onclick="event.stopPropagation();toggleCombiner('${t.id}')" class="combiner-btn w-6 h-6 rounded text-xs flex items-center justify-center transition ${inCombo ? 'bg-purple-100 text-purple-600' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}"><i class="fa ${inCombo ? 'fa-check' : 'fa-plus'}"></i></button>
+        </div>
+        <i class="fa fa-chevron-right text-gray-300 text-xs"></i>
+      </div>`;
+    }
+
+    // ========== 分页 ==========
+    function renderPagination() {
+      const total = Math.ceil(filteredTemplates.length / pageSize);
+      const container = document.getElementById('pagination');
+      if (total <= 1) { container.innerHTML = ''; return; }
+
+      let html = `<button onclick="goPage(${currentPage - 1})" class="px-3 py-1.5 rounded-lg text-sm ${currentPage === 1 ? 'bg-gray-100 text-gray-300 cursor-not-allowed' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}"><i class="fa fa-chevron-left"></i></button>`;
+      for (let i = 1; i <= total; i++) {
+        html += `<button onclick="goPage(${i})" class="px-3 py-1.5 rounded-lg text-sm font-medium ${i === currentPage ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">${i}</button>`;
+      }
+      html += `<button onclick="goPage(${currentPage + 1})" class="px-3 py-1.5 rounded-lg text-sm ${currentPage === total ? 'bg-gray-100 text-gray-300 cursor-not-allowed' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}"><i class="fa fa-chevron-right"></i></button>`;
+      container.innerHTML = html;
+    }
+
+    function goPage(page) {
+      const total = Math.ceil(filteredTemplates.length / pageSize);
+      if (page < 1 || page > total) return;
+      currentPage = page;
+      render();
+      document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ========== 筛选与搜索 ==========
+    function filterByCategory(cat) {
+      currentCategory = cat;
+      currentPage = 1;
+      document.querySelectorAll('[id^="cat-"]').forEach(btn => {
+        btn.className = btn.id === `cat-${cat}` ? 'px-3.5 py-1.5 bg-blue-500 text-white rounded-full text-xs font-medium transition tag-pill' : 'px-3.5 py-1.5 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-gray-200 transition tag-pill';
+      });
+      applyFilter();
+    }
+
+    function clearFilter() {
+      document.getElementById('searchInput').value = '';
+      filterByCategory('全部');
+    }
+
+    function search() {
+      currentPage = 1;
+      applyFilter();
+    }
+
+    function applyFilter() {
+      const q = document.getElementById('searchInput').value.trim().toLowerCase();
+      filteredTemplates = templates.filter(t => {
+        if (currentCategory !== '全部' && t.category !== currentCategory) return false;
+        if (q) {
+          const searchText = `${t.name}${t.description}${t.scenario}${t.tags.join('')}${t.category}`.toLowerCase();
+          return searchText.includes(q);
+        }
+        return true;
+      });
+      render();
+    }
+
+    // ========== 视图切换 ==========
+    function toggleView(view) {
+      currentView = view;
+      document.getElementById('view-grid').className = view === 'grid' ? 'px-3 py-1.5 bg-blue-100 text-blue-600 rounded text-sm' : 'px-3 py-1.5 bg-gray-100 text-gray-500 rounded text-sm';
+      document.getElementById('view-list').className = view === 'list' ? 'px-3 py-1.5 bg-blue-100 text-blue-600 rounded text-sm' : 'px-3 py-1.5 bg-gray-100 text-gray-500 rounded text-sm';
+      render();
+    }
+
+    // ========== 模态窗 ==========
+    function showModal(id) {
+      const t = templates.find(t => t.id === id);
+      if (!t) return;
+      currentTemplateId = id;
+
+      document.getElementById('modalTitle').textContent = t.name;
+      document.getElementById('modalDesc').textContent = t.description;
+      document.getElementById('modalScenario').textContent = t.scenario;
+      document.getElementById('modalDeps').textContent = t.deps === '--' ? '无需额外依赖' : t.deps;
+
+      document.getElementById('modalTags').innerHTML = t.tags.map(tag => `<span class="text-xs px-2 py-0.5 bg-blue-50 text-blue-500 rounded-full">${tag}</span>`).join('');
+
+      const colorMap = {
+        '日记': 'from-amber-400 to-orange-400',
+        '笔记': 'from-blue-400 to-indigo-400',
+        '项目管理': 'from-emerald-400 to-teal-400',
+        '复盘': 'from-violet-400 to-purple-400',
+        '目标': 'from-rose-400 to-pink-400',
+        '生活': 'from-cyan-400 to-sky-400'
+      };
+      const gradient = colorMap[t.category] || 'from-gray-400 to-slate-400';
+      document.getElementById('modalHeader').className = `sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10 bg-gradient-to-r ${gradient}`;
+      document.getElementById('modalTitle').className = 'text-xl font-bold text-white';
+      document.getElementById('modalTags').className = 'flex gap-1.5 mt-1.5';
+
+      document.getElementById('modalPreview').innerHTML = `<pre><code class="language-markdown">${escapeHtml(t.content)}</code></pre>`;
+
+      // 评分和组合按钮
+      const ratingHtml = renderRatingStars(id) + '<span class="mx-2 text-gray-300">|</span>' +
+        `<button onclick="event.stopPropagation();toggleCombiner('${id}')" class="combiner-btn text-xs px-3 py-1 rounded-full transition flex items-center gap-1 ${isInCombiner(id) ? 'bg-purple-100 text-purple-600' : 'bg-white/20 text-white hover:bg-white/30'}">
+          <i class="fa ${isInCombiner(id) ? 'fa-check' : 'fa-plus'}"></i> ${isInCombiner(id) ? '已加入组合' : '加入组合'}
+        </button>`;
+      document.getElementById('modalTags').innerHTML += `<div class="flex items-center mt-2 flex-wrap gap-1">${ratingHtml}</div>`;
+
+      document.getElementById('modal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    // ========== 评分系统 ==========
+    const ratings = JSON.parse(localStorage.getItem('obsidianTemplateRatings') || '{}');
+
+    function getRating(id) { return ratings[id] || 0; }
+
+    function setRating(id, val) {
+      ratings[id] = val;
+      localStorage.setItem('obsidianTemplateRatings', JSON.stringify(ratings));
+      if (currentTemplateId === id) renderRatingStars(id, val);
+      // 更新卡片评分显示
+      const cards = document.querySelectorAll(`[data-template-id="${id}"] .rating-display`);
+      if (cards.length) {
+        cards.forEach(el => { el.innerHTML = renderStarDisplay(id, val); });
+      }
+      showToast(`评分：${'⭐'.repeat(val)}`, 'success');
+    }
+
+    function renderStarDisplay(id, val) {
+      const r = val || getRating(id);
+      if (!r) return '<span class="text-xs text-gray-300">未评分</span>';
+      return '<span class="text-xs">' + '⭐'.repeat(r) + '</span>';
+    }
+
+    function renderRatingStars(id, cur) {
+      const c = cur || getRating(id);
+      return '<div class="flex items-center gap-1">' +
+        '<span class="text-xs text-gray-400 mr-1">评分：</span>' +
+        [1,2,3,4,5].map(i => `<span onclick="event.stopPropagation();setRating('${id}',${i})" class="cursor-pointer text-lg transition hover:scale-110 ${i <= c ? '' : 'opacity-30'}">⭐</span>`).join('') +
+        (c ? `<span class="text-xs text-gray-400 ml-1">${c}/5</span>` : '') +
+        '</div>';
+    }
+
+    function getAvgRating(id) {
+      const all = JSON.parse(localStorage.getItem('obsidianTemplateRatings') || '{}');
+      const r = all[id] || 0;
+      return r;
+    }
+
+    // ========== 模板组合器 ==========
+    const combiner = JSON.parse(localStorage.getItem('obsidianTemplateCombiner') || '[]');
+
+    function saveCombiner() {
+      localStorage.setItem('obsidianTemplateCombiner', JSON.stringify(combiner));
+      updateCombinerUI();
+    }
+
+    function toggleCombiner(id) {
+      const idx = combiner.indexOf(id);
+      if (idx > -1) combiner.splice(idx, 1);
+      else combiner.push(id);
+      saveCombiner();
+    }
+
+    function isInCombiner(id) { return combiner.includes(id); }
+
+    function updateCombinerUI() {
+      const panel = document.getElementById('combinerPanel');
+      const trigger = document.getElementById('combinerTrigger');
+      const list = document.getElementById('combinerList');
+      const count = document.getElementById('combinerCount');
+
+      count.textContent = `${combiner.length}个模板`;
+
+      if (combiner.length === 0) {
+        panel.classList.add('translate-y-full');
+        trigger.classList.add('hidden');
+        list.innerHTML = '';
+        // 更新所有按钮状态
+        document.querySelectorAll('.combiner-btn').forEach(btn => { btn.innerHTML = '<i class="fa fa-plus"></i>'; btn.classList.remove('bg-purple-100','text-purple-600'); btn.classList.add('bg-gray-50','text-gray-400'); });
+        return;
+      }
+
+      // 显示触发按钮
+      trigger.classList.remove('hidden');
+
+      // 渲染列表
+      list.innerHTML = combiner.map(id => {
+        const t = templates.find(t => t.id === id);
+        if (!t) return '';
+        return `<span class="inline-flex items-center gap-1 bg-purple-50 text-purple-700 text-xs px-2 py-1 rounded-full">
+          ${t.name}
+          <button onclick="event.stopPropagation();toggleCombiner('${id}')" class="hover:text-red-500 ml-0.5"><i class="fa fa-times"></i></button>
+        </span>`;
+      }).join('');
+
+      // 更新所有按钮状态
+      document.querySelectorAll('.combiner-btn').forEach(btn => {
+        const tid = btn.dataset.tid;
+        if (combiner.includes(tid)) {
+          btn.innerHTML = '<i class="fa fa-check"></i>';
+          btn.classList.remove('bg-gray-50','text-gray-400');
+          btn.classList.add('bg-purple-100','text-purple-600');
+        } else {
+          btn.innerHTML = '<i class="fa fa-plus"></i>';
+          btn.classList.remove('bg-purple-100','text-purple-600');
+          btn.classList.add('bg-gray-50','text-gray-400');
+        }
+      });
+    }
+
+    function toggleCombinerPanel() {
+      const panel = document.getElementById('combinerPanel');
+      const open = panel.classList.contains('translate-y-full');
+      if (open) {
+        panel.classList.remove('translate-y-full');
+        document.getElementById('combinerTrigger').classList.add('hidden');
+      } else {
+        panel.classList.add('translate-y-full');
+        document.getElementById('combinerTrigger').classList.remove('hidden');
+      }
+    }
+
+    function clearCombiner() {
+      combiner.length = 0;
+      saveCombiner();
+    }
+
+    function getMergedContent() {
+      return combiner.map((id, idx) => {
+        const t = templates.find(t => t.id === id);
+        if (!t) return '';
+        const sep = idx > 0 ? '\n\n---\n\n' : '';
+        return `${sep}# 模板：${t.name}\n\n> ${t.description}\n> 场景：${t.scenario}\n\n${t.content}`;
+      }).join('');
+    }
+
+    function previewCombined() {
+      if (combiner.length === 0) { showToast('请先选择要合并的模板', 'info'); return; }
+      const content = getMergedContent();
+      document.getElementById('combinedPreview').innerHTML = `<pre><code class="language-markdown">${escapeHtml(content)}</code></pre>`;
+      document.getElementById('combineModal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeCombineModal() {
+      document.getElementById('combineModal').classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    function copyCombined() {
+      if (combiner.length === 0) { showToast('请先选择要合并的模板', 'info'); return; }
+      const content = getMergedContent();
+      navigator.clipboard.writeText(content).then(() => {
+        showToast('已复制合并内容！', 'success');
+      }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = content;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast('已复制合并内容！', 'success');
+      });
+    }
+
+    // ========== 复制 ==========
+    function copyTemplate() {
+      const t = templates.find(t => t.id === currentTemplateId);
+      if (!t) return;
+
+      navigator.clipboard.writeText(t.content).then(() => {
+        showToast('已复制到剪贴板！', 'success');
+      }).catch(() => {
+        // fallback
+        const ta = document.createElement('textarea');
+        ta.value = t.content;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast('已复制到剪贴板！', 'success');
+      });
+    }
+
+    // ========== 安装指引 ==========
+    function showInstallGuide() {
+      document.getElementById('installModal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeInstallModal() {
+      document.getElementById('installModal').classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    // ========== Toast ==========
+    function showToast(msg, type) {
+      const el = document.getElementById('toast');
+      el.className = 'toast';
+      el.innerHTML = `<div class="bg-gray-800 text-white px-5 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2"><i class="fa fa-${type === 'success' ? 'check-circle' : 'info-circle'} text-${type === 'success' ? 'green' : 'blue'}-400"></i>${msg}</div>`;
+      el.classList.remove('hidden');
+      setTimeout(() => { el.classList.add('hidden'); }, 2500);
+    }
+
+    // ========== 工具函数 ==========
+    function escapeHtml(text) {
+      return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // ========== 键盘事件 ==========
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        if (!document.getElementById('combineModal').classList.contains('hidden')) {
+          closeCombineModal();
+        } else if (!document.getElementById('installModal').classList.contains('hidden')) {
+          closeInstallModal();
+        } else if (!document.getElementById('modal').classList.contains('hidden')) {
+          closeModal();
+        }
+      }
+    });
+
+    // 点击半透明背景关闭模态窗
+    document.getElementById('modal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+    document.getElementById('installModal').addEventListener('click', function(e) {
+      if (e.target === this) closeInstallModal();
+    });
+    document.getElementById('combineModal').addEventListener('click', function(e) {
+      if (e.target === this) closeCombineModal();
+    });
+
+    // 搜索框回车触发搜索
+    document.getElementById('searchInput').addEventListener('keyup', function(e) {
+      if (e.key === 'Enter') search();
+    });
+
+    // ========== 初始化 ==========
+    renderStats();
+    render();
+    updateCombinerUI(); // 恢复组合器状态
+  </script>
+
+</body>
+</html>

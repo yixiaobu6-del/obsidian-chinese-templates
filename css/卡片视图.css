@@ -1,0 +1,176 @@
+/* Obsidian 卡片视图 CSS 片段 */
+/* 用于在 Obsidian 中创建卡片式笔记布局 */
+
+/* 卡片网格容器 */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+/* 单个卡片 */
+.card {
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 12px;
+  padding: 1.2rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: var(--interactive-accent);
+}
+
+/* 卡片标题 */
+.card-title {
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: var(--text-normal);
+}
+
+/* 卡片描述 */
+.card-description {
+  font-size: 0.9em;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 0.8rem;
+}
+
+/* 卡片标签 */
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+}
+
+.card-tags .tag {
+  font-size: 0.75em !important;
+  padding: 0.1em 0.4em;
+}
+
+/* 卡片状态 */
+.card-status {
+  display: inline-block;
+  font-size: 0.8em;
+  padding: 0.15em 0.6em;
+  border-radius: 10px;
+  margin-bottom: 0.5rem;
+}
+
+.card-status.done {
+  background: #4caf50;
+  color: white;
+}
+
+.card-status.progress {
+  background: #2196f3;
+  color: white;
+}
+
+.card-status.todo {
+  background: #ff9800;
+  color: white;
+}
+
+/* 时间轴样式 */
+.timeline {
+  border-left: 2px solid var(--interactive-accent);
+  padding-left: 1.5rem;
+  margin: 1rem 0;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 1.5rem;
+  padding-left: 0.5rem;
+}
+
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  left: -1.65rem;
+  top: 0.3rem;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--interactive-accent);
+  border: 2px solid var(--background-primary);
+}
+
+.timeline-date {
+  font-size: 0.85em;
+  color: var(--text-muted);
+  margin-bottom: 0.3rem;
+}
+
+.timeline-content {
+  font-size: 0.95em;
+}
+
+/* 进度条 */
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--background-modifier-border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0.5rem 0;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--interactive-accent);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* 标签云 */
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 1rem 0;
+}
+
+.tag-cloud .tag {
+  font-size: 0.85em;
+  padding: 0.2em 0.8em;
+  transition: transform 0.2s;
+}
+
+.tag-cloud .tag:hover {
+  transform: scale(1.1);
+}
+
+/* 统计面板 */
+.stats-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.stat-card {
+  text-align: center;
+  padding: 1rem;
+  background: var(--background-primary-alt);
+  border-radius: 8px;
+}
+
+.stat-number {
+  font-size: 2em;
+  font-weight: bold;
+  color: var(--interactive-accent);
+}
+
+.stat-label {
+  font-size: 0.85em;
+  color: var(--text-muted);
+  margin-top: 0.3rem;
+}
